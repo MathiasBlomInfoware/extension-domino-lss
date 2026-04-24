@@ -1,0 +1,51 @@
+{
+  "name": "domino-lss-lotusscript",
+  "displayName": "LotusScript & .lss",
+  "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
+  "version": "0.1.0",
+  "publisher": "infoware",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "lotusscript",
+    "domino",
+    "hcl domino",
+    "notes",
+    "lss"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:lotusscript"
+  ],
+  "contributes": {
+    "configurationDefaults": {
+      "files.associations": {
+        "*.lss": "lotusscript"
+      }
+    },
+    "languages": [
+      {
+        "id": "lotusscript",
+        "aliases": [
+          "LotusScript",
+          "lotusscript"
+        ],
+        "extensions": [
+          ".lss"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "lotusscript",
+        "scopeName": "source.lotusscript",
+        "path": "./syntaxes/lotusscript.tmLanguage.json"
+      }
+    ]
+  }
+}

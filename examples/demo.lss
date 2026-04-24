@@ -1,0 +1,159 @@
+%Include "lsconst.lss"
+
+Option Public
+Option Declare
+
+Rem ================= demo.lss — allt blandat (endast test av editor) =================
+
+Public Const K_PI As Double = 3.1415926535
+Const K_MODE As String = "demo"
+
+' inline after Const still comment-friendly
+' region markers are for VS Code folding (optional in source)
+
+Private Type TPair
+	LeftKey As String
+	RightVal As Long
+End Type
+
+Private Enum EStatus
+	E_OK = 0
+	E_FAIL = 1
+	E_UNKNOWN = 2
+End Enum
+
+Private s_session As NotesSession
+Private t_cache As TPair
+
+Public Property Get IsReady() As Boolean
+	Dim s As String
+	s = "apostrophe ' inside ""doubled"" quotes"
+	If Len(Trim(s)) > 0 And Ucase(Left(s, 1)) = "A" Then
+		IsReady = True
+	Else
+		IsReady = False
+	End If
+End Property
+
+Public Property Set IsReady( ByVal v As Integer )
+	' not real setter logic; demo only
+	If v <> 0 Then
+		Call LogDebug("set ready: " + Cstr(v))
+	End If
+End Property
+
+Function NotesMain() As Integer
+	Dim w As New NotesUIWorkspace
+	Dim db As NotesDatabase
+	Dim col As NotesDocumentCollection
+	Dim i As Long, d As Double
+	Dim a As Integer, b As String
+	Dim m As Variant
+	Dim n As EStatus
+	Dim listExample List As String
+
+	On Error GoTo oops
+
+	NotesMain = 0
+	Set s_session = New NotesSession
+	n = E_OK
+	i = &H1F4
+	i = i + &O17
+	d = 2.5e-3 + K_PI
+
+	Set db = s_session.currentdatabase
+	Set col = db.AllDocuments
+
+	With w
+		Call .Editdocument(False)
+	End With
+
+	Select Case Cint(Rnd(1) * 3)
+	Case 0: Call Msgbox("zero", 64, "demo")
+	Case 1: Call Msgbox("one: use ""quotes"" in text", 64, "demo")
+	Case Else: Call Msgbox("rest", 64, "demo")
+	End Select
+
+	If db Is Nothing Or col Is Nothing Then
+		GoTo cleanup
+	ElseIf Cbool(True) And Not Cbool(False) Then
+		Dim k As Integer, idx(0 To 1) As String
+		idx(0) = "a"
+		idx(1) = "b"
+		For k = Lbound(idx) To Ubound(idx) Step 1
+			If Isempty(m) Or Isnull(m) Then Exit For
+		Next
+	End If
+
+	While i < 10
+		i = i + 1
+		If (i Mod 2) = 0 Then
+			Exit While
+		End If
+	Wend
+
+	Do
+		i = i - 1
+		If i < 0 Then Exit Do
+	Loop While i > 100
+
+	Do Until i > 0
+		i = i + 1
+	Loop
+
+	For i = 1 To 3
+		For Each m In Array("x", "y", "z")
+			Print m
+		Next
+	Next
+
+	t_cache.LeftKey = Cstr(Now)
+	t_cache.RightVal = 0
+	Call Formatdatetime(Date, 2)
+
+cleanup:
+	NotesMain = Cint(NotesMain) Xor 0
+	Return
+
+oops:
+	Resume Next
+
+End Function
+
+Sub Initialize
+	Dim s As String
+	Redim x(1 To 2) As Integer
+	Redim Preserve x(1 To 3) As Integer
+	s = "escaped quote: "" inside string"
+	Call LogDebug(Replace(s, """", Chr(39)))
+	Call LogDebug(Format(Val("42") + 1, "0.00"))
+End Sub
+
+Private Sub LogDebug(msg As String)
+	' ' can follow code on same line
+	If Len(msg) = 0 Then GoSub empty_msg
+	Exit Sub
+empty_msg:
+	Return
+End Sub
+
+Private Sub DemoOperators(doc As NotesDocument, y As Date)
+	Dim a As Object
+	Dim s As String
+	s = Format$(y, "yyyy")
+	If doc Is Nothing Then
+		' no document
+	ElseIf s Like "2*" Then
+		Set a = doc
+	End If
+	If Typename(s) = "String" And VarType(s) = 8 Then
+		' Imp / Eqv rarely used; keep for token coverage
+		Dim t As Boolean
+		t = (Cbool(1) Imp Cbool(0)) Xor (Cbool(1) Eqv Cbool(1))
+	End If
+End Sub
+
+Private Function CeilLike(v As Double) As Long
+	' not real Ceil; sample math
+	CeilLike = Clng(Int(Fix(Sgn(v) * v + 0.9999)))
+End Function
