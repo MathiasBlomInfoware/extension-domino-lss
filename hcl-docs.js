@@ -455,7 +455,7 @@ function markdownDoc(version, file, title) {
 
 /**
  * @param {string} word identifier under cursor
- * @param {string} version help version e.g. 14.5.0
+ * @param {string} version help version e.g. 14.5.1
  * @returns {vscode.MarkdownString | undefined}
  */
 function hoverMarkdownForWord(word, version) {

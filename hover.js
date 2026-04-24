@@ -174,7 +174,7 @@ function registerHclHover(context) {
       const version =
         vscode.workspace
           .getConfiguration("domino-lss-lotusscript")
-          .get("helpVersion", "14.5.0") + "";
+          .get("helpVersion", "14.5.1") + "";
 
       const lineText = document.lineAt(position.line).text;
       const fullText = document.getText();

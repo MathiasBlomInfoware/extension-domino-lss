@@ -26,7 +26,7 @@ function registerHclCompletions(context) {
     const version =
       vscode.workspace
         .getConfiguration("domino-lss-lotusscript")
-        .get("helpVersion", "14.5.0") + "";
+        .get("helpVersion", "14.5.1") + "";
     const base = basicBase(version);
     /** @type {vscode.CompletionItem[]} */
     const items = [];
@@ -80,7 +80,7 @@ function registerHclCompletions(context) {
       const version =
         vscode.workspace
           .getConfiguration("domino-lss-lotusscript")
-          .get("helpVersion", "14.5.0") + "";
+          .get("helpVersion", "14.5.1") + "";
       if (!cache || cacheVersion !== version) {
         rebuild();
       }

@@ -2,7 +2,7 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "infoware",
   "engines": {
     "vscode": "^1.85.0"
@@ -43,8 +43,8 @@
         },
         "domino-lss-lotusscript.helpVersion": {
           "type": "string",
-          "default": "14.5.0",
-          "description": "Domino Designer help version segment in HCL URLs (e.g. 14.5.0)."
+          "default": "14.5.1",
+          "description": "Domino Designer help version segment in HCL URLs (e.g. 14.5.1). See https://help.hcl-software.com/dom_designer/14.5.1/index.html"
         },
         "domino-lss-lotusscript.membersOnlyAfterDot": {
           "type": "boolean",

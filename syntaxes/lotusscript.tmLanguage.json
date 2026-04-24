@@ -3,7 +3,13 @@
   "name": "LotusScript",
   "scopeName": "source.lotusscript",
   "patterns": [
+    {
+      "name": "constant.other.set.lotusscript",
+      "comment": "Quote as Replace set element ({\"}); must be first so { does not open the generic {…} rule whose inner \" would swallow until the next \".",
+      "match": "\\{\"\\}(?!\")"
+    },
     { "include": "#rem_block" },
+    { "include": "#set_literals" },
     { "include": "#strings" },
     { "include": "#preprocessor" },
     { "include": "#declarations" },
@@ -28,6 +34,20 @@
             "1": { "name": "punctuation.definition.comment.lotusscript" }
           },
           "contentName": "comment.block.documentation.lotusscript"
+        }
+      ]
+    },
+    "set_literals": {
+      "patterns": [
+        {
+          "name": "constant.other.delimited-char.lotusscript",
+          "comment": "Replace() etc.: |c| for one character (e.g. |\\\"| for a double quote).",
+          "match": "\\|[^|]\\|"
+        },
+        {
+          "name": "constant.other.set.lotusscript",
+          "comment": "One-line { … } character sets (no } inside elements). Nested quotes use \"\" only.",
+          "match": "\\{[^\\n}]*\\}"
         }
       ]
     },
