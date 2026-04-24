@@ -3,7 +3,7 @@
 Option Public
 Option Declare
 
-Rem ================= demo.lss — allt blandat (endast test av editor) =================
+Rem ================= demo.lss: mixed syntax samples for the editor =================
 
 Public Const K_PI As Double = 3.1415926535
 Const K_MODE As String = "demo"
@@ -120,6 +120,8 @@ oops:
 
 End Function
 
+
+
 Sub Initialize
 	Dim s As String
 	Redim x(1 To 2) As Integer
@@ -136,6 +138,8 @@ Private Sub LogDebug(msg As String)
 empty_msg:
 	Return
 End Sub
+
+dim pelle as NotesUIWorkspace	
 
 Private Sub DemoOperators(doc As NotesDocument, y As Date)
 	Dim a As Object

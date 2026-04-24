@@ -19,10 +19,44 @@
   ],
   "main": "./extension.js",
   "activationEvents": [
-    "onLanguage:lotusscript"
+    "onLanguage:lotusscript",
+    "onStartupFinished"
   ],
   "contributes": {
+    "configuration": {
+      "title": "LotusScript (.lss)",
+      "properties": {
+        "domino-lss-lotusscript.requireAsciiComments": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when comments contain non-ASCII characters, to encourage English-only comments."
+        },
+        "domino-lss-lotusscript.enableHclDocCompletions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suggest LotusScript built-ins and Notes classes with links to HCL Domino Designer online help."
+        },
+        "domino-lss-lotusscript.enableHclDocHover": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show HCL documentation links when hovering identifiers (built-ins, Notes classes, common keywords)."
+        },
+        "domino-lss-lotusscript.helpVersion": {
+          "type": "string",
+          "default": "14.5.0",
+          "description": "Domino Designer help version segment in HCL URLs (e.g. 14.5.0)."
+        },
+        "domino-lss-lotusscript.membersOnlyAfterDot": {
+          "type": "boolean",
+          "default": true,
+          "description": "After obj., show only curated HCL-style Notes members when obj is Dim … As Notes* (or Sub/Function param). Otherwise show an empty list. Turn off to fall back to general suggestions after unknown objects."
+        }
+      }
+    },
     "configurationDefaults": {
+      "[lotusscript]": {
+        "editor.wordBasedSuggestions": "off"
+      },
       "files.associations": {
         "*.lss": "lotusscript"
       }
@@ -45,6 +79,30 @@
         "language": "lotusscript",
         "scopeName": "source.lotusscript",
         "path": "./syntaxes/lotusscript.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "lotusscript",
+        "path": "./snippets/lotusscript.json"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "editor.action.insertSnippet",
+        "args": {
+          "snippet": "%REM\n\tSub ${1:temp}\n\tDescription: ${2:Comments for Sub}\n%END REM\nSub ${1:temp}\n\n\t$0\nEnd Sub"
+        },
+        "key": "ctrl+shift+r",
+        "when": "editorTextFocus && editorLangId == lotusscript && !editorReadonly"
+      },
+      {
+        "command": "editor.action.insertSnippet",
+        "args": {
+          "snippet": "%REM\n\tFunction ${1:temp}\n\tDescription: ${2:Comments for Function}\n%END REM\nFunction ${1:temp}() As ${3:Variant}\n\n\t$0\nEnd Function"
+        },
+        "key": "ctrl+shift+y",
+        "when": "editorTextFocus && editorLangId == lotusscript && !editorReadonly"
       }
     ]
   }

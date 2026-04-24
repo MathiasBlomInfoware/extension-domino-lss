@@ -3,6 +3,7 @@
   "name": "LotusScript",
   "scopeName": "source.lotusscript",
   "patterns": [
+    { "include": "#rem_block" },
     { "include": "#strings" },
     { "include": "#preprocessor" },
     { "include": "#declarations" },
@@ -14,6 +15,22 @@
     { "include": "#comments" }
   ],
   "repository": {
+    "rem_block": {
+      "patterns": [
+        {
+          "name": "comment.block.documentation.lotusscript",
+          "begin": "(?i)^\\s*(%\\s*REM)\\s*$",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.comment.lotusscript" }
+          },
+          "end": "(?i)^\\s*(%\\s*END\\s+REM|%ENDREM)\\s*$",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.comment.lotusscript" }
+          },
+          "contentName": "comment.block.documentation.lotusscript"
+        }
+      ]
+    },
     "comments": {
       "patterns": [
         {

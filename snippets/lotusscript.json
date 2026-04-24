@@ -1,0 +1,35 @@
+{
+  "Sub with %REM header": {
+    "prefix": ["subrem", "sub"],
+    "body": [
+      "%REM",
+      "\tSub ${1:temp}",
+      "\tDescription: ${2:Comments for Sub}",
+      "%END REM",
+      "Sub ${1:temp}",
+      "",
+      "\t$0",
+      "End Sub"
+    ],
+    "description": "Sub with %REM … %END REM (Domino-style header)"
+  },
+  "Function with %REM header": {
+    "prefix": "funrem",
+    "body": [
+      "%REM",
+      "\tFunction ${1:temp}",
+      "\tDescription: ${2:Comments for Function}",
+      "%END REM",
+      "Function ${1:temp}() As ${3:Variant}",
+      "",
+      "\t$0",
+      "End Function"
+    ],
+    "description": "Function with %REM … %END REM (Domino-style header)"
+  },
+  "%REM block only": {
+    "prefix": ["pctrem", "%rem"],
+    "body": ["%REM", "\t${1}", "\tDescription: ${2}", "%END REM", ""],
+    "description": "Empty %REM … %END REM block"
+  }
+}
