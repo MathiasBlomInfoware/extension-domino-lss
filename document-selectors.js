@@ -6,6 +6,8 @@ const LOTUSSCRIPT_OR_LSS = [
   { language: "lotusscript" },
   { scheme: "file", pattern: "**/*.lss" },
   { scheme: "untitled", pattern: "**/*.lss" },
+  // Any scheme (e.g. remote) when the path ends with .lss
+  { pattern: "**/*.lss" },
 ];
 
 /**
@@ -16,7 +18,12 @@ function isLssDocument(doc) {
     return true;
   }
   const p = (doc.uri.fsPath || doc.uri.path || "").toLowerCase();
-  return p.endsWith(".lss");
+  if (p.endsWith(".lss")) {
+    return true;
+  }
+  // Fallback: some hosts only expose a basename (e.g. untitled / virtual).
+  const fn = typeof doc.fileName === "string" ? doc.fileName.toLowerCase() : "";
+  return fn.endsWith(".lss");
 }
 
 module.exports = { LOTUSSCRIPT_OR_LSS, isLssDocument };

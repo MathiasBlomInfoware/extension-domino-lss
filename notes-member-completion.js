@@ -73,6 +73,49 @@ function splitTopLevelParams(paramList) {
  * @param {string} className
  * @param {string} filterLower prefix after dot, lowercase
  */
+/**
+ * @param {string} version
+ * @param {string} className
+ * @param {{ name: string; kind: string; summary: string }} member
+ */
+function memberHoverMarkdown(version, className, member) {
+  const classUrl = basicBase(version) + notesClassDocFile(className);
+  const md = new vscode.MarkdownString(
+    `### ${className}.${member.name}\n\n**${member.kind}** — ${member.summary}\n\n---\n\n[HCL class reference — ${className}](${classUrl})`
+  );
+  md.isTrusted = true;
+  return md;
+}
+
+/**
+ * Hover for `obj.Member` when `obj` is typed as Notes* and Member is in the curated list.
+ * @param {string} fullText
+ * @param {string} lineText
+ * @param {string} word identifier under cursor
+ * @param {number} wordStartCol 0-based column where `word` starts
+ * @param {string} version
+ * @returns {vscode.MarkdownString | undefined}
+ */
+function tryNotesMemberHover(fullText, lineText, word, wordStartCol, version) {
+  const before = lineText.slice(0, wordStartCol);
+  const m = before.match(/(\w+)\.\s*$/);
+  if (!m) {
+    return undefined;
+  }
+  const obj = m[1];
+  const map = buildNotesVarTypeMap(fullText);
+  const notesType = map.get(obj.toLowerCase());
+  if (!notesType || !NOTES_MEMBERS[notesType]) {
+    return undefined;
+  }
+  const w = word.replace(/\$/g, "").trim();
+  const member = NOTES_MEMBERS[notesType].find((x) => x.name.toLowerCase() === w.toLowerCase());
+  if (!member) {
+    return undefined;
+  }
+  return memberHoverMarkdown(version, notesType, member);
+}
+
 function memberCompletionItems(version, className, filterLower) {
   const list = NOTES_MEMBERS[className];
   if (!list) {
@@ -140,4 +183,5 @@ module.exports = {
   NOTES_MEMBERS,
   buildNotesVarTypeMap,
   tryNotesMemberCompletion,
+  tryNotesMemberHover,
 };

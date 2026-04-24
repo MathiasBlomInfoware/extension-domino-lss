@@ -52,6 +52,8 @@ Function NotesMain() As Integer
 	Dim n As EStatus
 	Dim listExample List As String
 
+	
+
 	On Error GoTo oops
 
 	NotesMain = 0
@@ -124,6 +126,8 @@ End Function
 
 Sub Initialize
 	Dim s As String
+	dim doc as NotesDocument
+	doc.universalid
 	Redim x(1 To 2) As Integer
 	Redim Preserve x(1 To 3) As Integer
 	s = "escaped quote: "" inside string"
