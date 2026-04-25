@@ -50,6 +50,7 @@ const provider = {
     providedCodeActionKinds: [
       vscode.CodeActionKind.QuickFix,
       vscode.CodeActionKind.RefactorRewrite,
+      vscode.CodeActionKind.RefactorExtract,
     ],
   },
   /**
@@ -259,6 +260,10 @@ const provider = {
       }
     }
 
+    addExtractConstantAction(document, range, actions);
+    addWrapWithErrorHandlerAction(document, range, actions);
+    addGeneratePropertyAccessorsAction(document, range, actions);
+
     return actions;
   },
 };
@@ -288,6 +293,180 @@ function documentContainsLsConst(document) {
     if (/%\s*Include\s+"\s*lsconst\.lss\s*"/i.test(t)) return true;
   }
   return false;
+}
+
+/**
+ * @param {string} name
+ */
+function toPropertyName(name) {
+  let out = name.replace(/^\s+|\s+$/g, "");
+  out = out.replace(/^m_+/i, "");
+  out = out.replace(/^_+/, "");
+  if (!out) return "Value";
+  return out
+    .split(/_+/)
+    .filter(Boolean)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join("");
+}
+
+/**
+ * @param {string} typeName
+ */
+function isObjectType(typeName) {
+  return /^(Notes[A-Za-z]\w*|Object)$/i.test(typeName.trim());
+}
+
+/**
+ * @param {vscode.TextDocument} document
+ * @param {number} line
+ */
+function findEnclosingProcedure(document, line) {
+  for (let i = line; i >= 0; i--) {
+    const t = document.lineAt(i).text;
+    const m = t.match(/^\s*(?:Public\s+|Private\s+|Static\s+|Friend\s+)*(Sub|Function|Property(?:\s+Get|\s+Set|\s+Let)?)\b/i);
+    if (m) {
+      const kindRaw = m[1].toLowerCase();
+      if (kindRaw.startsWith("function")) return { line: i, exitKind: "Function", indent: t.match(/^(\s*)/)?.[1] ?? "" };
+      if (kindRaw.startsWith("property")) return { line: i, exitKind: "Property", indent: t.match(/^(\s*)/)?.[1] ?? "" };
+      return { line: i, exitKind: "Sub", indent: t.match(/^(\s*)/)?.[1] ?? "" };
+    }
+    if (/^\s*End\s+(Sub|Function|Property)\b/i.test(t)) break;
+  }
+  return undefined;
+}
+
+/**
+ * @param {vscode.TextDocument} document
+ * @param {string} base
+ */
+function uniqueConstName(document, base) {
+  let candidate = base;
+  let n = 2;
+  const all = document.getText();
+  while (new RegExp(`\\b${candidate}\\b`, "i").test(all)) {
+    candidate = `${base}_${n++}`;
+  }
+  return candidate;
+}
+
+/**
+ * @param {vscode.TextDocument} document
+ * @param {vscode.Range | vscode.Selection} range
+ * @param {vscode.CodeAction[]} actions
+ */
+function addExtractConstantAction(document, range, actions) {
+  if (range.isEmpty) return;
+  const selected = document.getText(range).trim();
+  if (!selected) return;
+  if (!/^(?:"(?:[^"]|"")*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|True|False)$/i.test(selected)) return;
+
+  const proc = findEnclosingProcedure(document, range.start.line);
+  if (!proc) return;
+  const name = uniqueConstName(document, "EXTRACTED_CONST");
+  const insertLine = proc.line + 1;
+  const constIndent = proc.indent + INDENT_TAB;
+
+  const action = new vscode.CodeAction(
+    `Extract constant '${name}'`,
+    vscode.CodeActionKind.RefactorExtract
+  );
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(document.uri, new vscode.Position(insertLine, 0), `${constIndent}Const ${name} = ${selected}\n`);
+  edit.replace(document.uri, range, name);
+  action.edit = edit;
+  actions.push(action);
+}
+
+/**
+ * @param {vscode.TextDocument} document
+ * @param {vscode.Range | vscode.Selection} range
+ * @param {vscode.CodeAction[]} actions
+ */
+function addWrapWithErrorHandlerAction(document, range, actions) {
+  if (range.isEmpty) return;
+  const startLine = range.start.line;
+  const endLine = range.end.character === 0 && range.end.line > startLine ? range.end.line - 1 : range.end.line;
+  if (endLine < startLine) return;
+
+  const fullRange = new vscode.Range(
+    new vscode.Position(startLine, 0),
+    new vscode.Position(endLine, document.lineAt(endLine).text.length)
+  );
+  const block = document.getText(fullRange);
+  if (!block.trim()) return;
+
+  const proc = findEnclosingProcedure(document, startLine);
+  const exitKind = proc?.exitKind ?? "Sub";
+  const indent = (document.lineAt(startLine).text.match(/^(\s*)/)?.[1] ?? "");
+  const inner = indent + INDENT_TAB;
+  const wrapped = [
+    `${indent}On Error GoTo ErrorHandler`,
+    block,
+    `${indent}Exit ${exitKind}`,
+    `${indent}ErrorHandler:`,
+    `${inner}MessageBox "Error " & Err & ": " & Error$ & " at line " & Erl, 16, "Error"`,
+    `${inner}Resume Next`,
+  ].join("\n");
+
+  const action = new vscode.CodeAction(
+    "Wrap selection with On Error handler",
+    vscode.CodeActionKind.RefactorRewrite
+  );
+  const edit = new vscode.WorkspaceEdit();
+  edit.replace(document.uri, fullRange, wrapped);
+  action.edit = edit;
+  actions.push(action);
+}
+
+/**
+ * @param {vscode.TextDocument} document
+ * @param {vscode.Range | vscode.Selection} range
+ * @param {vscode.CodeAction[]} actions
+ */
+function addGeneratePropertyAccessorsAction(document, range, actions) {
+  const lineNo = range.start.line;
+  const line = document.lineAt(lineNo).text;
+  const m = line.match(/^(\s*)Private\s+([A-Za-z_]\w*)\s+As\s+([A-Za-z_]\w*)\b/i);
+  if (!m) return;
+  const indent = m[1];
+  const fieldName = m[2];
+  const typeName = m[3];
+  const propertyName = toPropertyName(fieldName);
+  if (!propertyName) return;
+  const existing = new RegExp(`^\\s*(?:Public\\s+|Private\\s+|Static\\s+|Friend\\s+)*Property\\s+(?:Get|Set|Let)\\s+${propertyName}\\b`, "im");
+  if (existing.test(document.getText())) return;
+
+  const inner = indent + INDENT_TAB;
+  const objectTyped = isObjectType(typeName);
+  const members = objectTyped
+    ? [
+        `${indent}Public Property Get ${propertyName} As ${typeName}`,
+        `${inner}Set ${propertyName} = ${fieldName}`,
+        `${indent}End Property`,
+        ``,
+        `${indent}Public Property Set ${propertyName}(ByVal value As ${typeName})`,
+        `${inner}Set ${fieldName} = value`,
+        `${indent}End Property`,
+      ]
+    : [
+        `${indent}Public Property Get ${propertyName} As ${typeName}`,
+        `${inner}${propertyName} = ${fieldName}`,
+        `${indent}End Property`,
+        ``,
+        `${indent}Public Property Let ${propertyName}(ByVal value As ${typeName})`,
+        `${inner}${fieldName} = value`,
+        `${indent}End Property`,
+      ];
+
+  const action = new vscode.CodeAction(
+    `Generate Property Get/${objectTyped ? "Set" : "Let"} for '${fieldName}'`,
+    vscode.CodeActionKind.RefactorRewrite
+  );
+  const edit = new vscode.WorkspaceEdit();
+  edit.insert(document.uri, new vscode.Position(lineNo + 1, 0), `\n${members.join("\n")}\n`);
+  action.edit = edit;
+  actions.push(action);
 }
 
 /** @param {vscode.ExtensionContext} context */

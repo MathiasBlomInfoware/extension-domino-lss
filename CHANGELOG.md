@@ -2,6 +2,12 @@
 
 All notable changes to `infoware.domino-lss-lotusscript` are documented here.
 
+## 1.1.0
+
+- Added diagnostics profiles (`strict`, `balanced`, `legacy`) so teams can switch default lint intensity quickly while still overriding individual checks.
+- Expanded refactor pack in Code Actions with three new editor actions: extract selected literal to local `Const`, wrap selection in an `On Error` handler block, and generate `Property Get/Let` or `Property Get/Set` from private fields.
+- Added fixture-based scanner regression tests under `tests/` with `npm run test:fixtures` to keep comment/string/reference scanning behavior stable.
+
 ## 1.0.0
 
 - Stabilized core language tooling for production use: workspace references, rename, document highlights, type definition/implementation, and improved scope-aware rename/reference behavior for local variables and parameters.

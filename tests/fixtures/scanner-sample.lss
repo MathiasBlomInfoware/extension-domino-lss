@@ -1,0 +1,15 @@
+Option Public
+Option Declare
+
+Sub Demo()
+	Dim alpha As String
+	Dim beta As String
+	alpha = "alpha in string should not count"
+	beta = alpha
+	' alpha in line comment should not count
+	Rem alpha in Rem comment should not count
+	%REM
+	alpha in %REM should not count
+	%END REM
+	beta = alpha
+End Sub

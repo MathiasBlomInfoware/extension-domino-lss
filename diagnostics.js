@@ -110,6 +110,75 @@ function isPercentRemEnd(line) {
 }
 
 /**
+ * @param {vscode.WorkspaceConfiguration} conf
+ */
+function readDiagnosticsProfile(conf) {
+  const raw = String(conf.get("diagnosticsProfile", "balanced")).toLowerCase();
+  if (raw === "strict" || raw === "legacy" || raw === "balanced") {
+    return raw;
+  }
+  return "balanced";
+}
+
+const PROFILE_DEFAULTS = Object.freeze({
+  strict: {
+    requireAsciiComments: true,
+    warnMissingOptionDeclare: true,
+    highlightTodos: true,
+    checkStructuralBlocks: true,
+    warnFallThroughErrorHandler: true,
+    warnSetNewWithoutDim: true,
+    warnDeprecatedCalls: true,
+    warnMagicMsgboxConstants: true,
+    warnNotesClassTypo: true,
+    warnUnusedSymbols: true,
+  },
+  balanced: {
+    requireAsciiComments: false,
+    warnMissingOptionDeclare: true,
+    highlightTodos: true,
+    checkStructuralBlocks: true,
+    warnFallThroughErrorHandler: true,
+    warnSetNewWithoutDim: true,
+    warnDeprecatedCalls: true,
+    warnMagicMsgboxConstants: true,
+    warnNotesClassTypo: true,
+    warnUnusedSymbols: true,
+  },
+  legacy: {
+    requireAsciiComments: false,
+    warnMissingOptionDeclare: false,
+    highlightTodos: false,
+    checkStructuralBlocks: true,
+    warnFallThroughErrorHandler: false,
+    warnSetNewWithoutDim: false,
+    warnDeprecatedCalls: true,
+    warnMagicMsgboxConstants: false,
+    warnNotesClassTypo: true,
+    warnUnusedSymbols: false,
+  },
+});
+
+/**
+ * Uses profile default unless check is explicitly configured by user/workspace.
+ * @param {vscode.WorkspaceConfiguration} conf
+ * @param {keyof typeof PROFILE_DEFAULTS.balanced} key
+ * @param {boolean} profileDefault
+ */
+function getProfiledCheck(conf, key, profileDefault) {
+  const inspected = conf.inspect(key);
+  const hasExplicit =
+    !!inspected &&
+    (inspected.globalValue !== undefined ||
+      inspected.workspaceValue !== undefined ||
+      inspected.workspaceFolderValue !== undefined);
+  if (hasExplicit) {
+    return !!conf.get(key, profileDefault);
+  }
+  return profileDefault;
+}
+
+/**
  * @param {vscode.TextDocument} doc
  * @param {vscode.DiagnosticCollection} collection
  */
@@ -118,16 +187,18 @@ function scanDocument(doc, collection) {
     return;
   }
   const conf = vscode.workspace.getConfiguration("domino-lss-lotusscript", doc.uri);
-  const checkAscii = conf.get("requireAsciiComments", true);
-  const checkOptionDeclare = conf.get("warnMissingOptionDeclare", true);
-  const checkTodos = conf.get("highlightTodos", true);
-  const checkStructure = conf.get("checkStructuralBlocks", true);
-  const checkErrHandler = conf.get("warnFallThroughErrorHandler", true);
-  const checkSetNew = conf.get("warnSetNewWithoutDim", true);
-  const checkDeprecated = conf.get("warnDeprecatedCalls", true);
-  const checkMsgbox = conf.get("warnMagicMsgboxConstants", true);
-  const checkNotesTypo = conf.get("warnNotesClassTypo", true);
-  const checkUnused = conf.get("warnUnusedSymbols", true);
+  const profile = readDiagnosticsProfile(conf);
+  const defaults = PROFILE_DEFAULTS[profile];
+  const checkAscii = getProfiledCheck(conf, "requireAsciiComments", defaults.requireAsciiComments);
+  const checkOptionDeclare = getProfiledCheck(conf, "warnMissingOptionDeclare", defaults.warnMissingOptionDeclare);
+  const checkTodos = getProfiledCheck(conf, "highlightTodos", defaults.highlightTodos);
+  const checkStructure = getProfiledCheck(conf, "checkStructuralBlocks", defaults.checkStructuralBlocks);
+  const checkErrHandler = getProfiledCheck(conf, "warnFallThroughErrorHandler", defaults.warnFallThroughErrorHandler);
+  const checkSetNew = getProfiledCheck(conf, "warnSetNewWithoutDim", defaults.warnSetNewWithoutDim);
+  const checkDeprecated = getProfiledCheck(conf, "warnDeprecatedCalls", defaults.warnDeprecatedCalls);
+  const checkMsgbox = getProfiledCheck(conf, "warnMagicMsgboxConstants", defaults.warnMagicMsgboxConstants);
+  const checkNotesTypo = getProfiledCheck(conf, "warnNotesClassTypo", defaults.warnNotesClassTypo);
+  const checkUnused = getProfiledCheck(conf, "warnUnusedSymbols", defaults.warnUnusedSymbols);
 
   /** @type {vscode.Diagnostic[]} */
   const diagnostics = [];

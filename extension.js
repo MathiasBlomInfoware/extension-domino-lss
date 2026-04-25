@@ -164,7 +164,8 @@ exports.activate = function (context) {
         e.affectsConfiguration("domino-lss-lotusscript.warnDeprecatedCalls") ||
         e.affectsConfiguration("domino-lss-lotusscript.warnMagicMsgboxConstants") ||
         e.affectsConfiguration("domino-lss-lotusscript.warnNotesClassTypo") ||
-        e.affectsConfiguration("domino-lss-lotusscript.warnUnusedSymbols")
+        e.affectsConfiguration("domino-lss-lotusscript.warnUnusedSymbols") ||
+        e.affectsConfiguration("domino-lss-lotusscript.diagnosticsProfile")
       ) {
         for (const doc of vscode.workspace.textDocuments) {
           run(doc);

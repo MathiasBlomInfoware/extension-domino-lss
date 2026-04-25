@@ -23,6 +23,7 @@ Syntax highlighting and language basics for **LotusScript** and HCL Domino **`.l
 - **Status bar** context for current symbol + per-file LotusScript diagnostic counts.
 - **Notes constants** (~100 across ACL levels, ACL types, DB types, embedded objects, FT search options, picklist/prompt types, item types, DXL options, stream EOL kinds, …) suggested in completion and explained on hover.
 - **Diagnostics** (each toggleable):
+  - `diagnosticsProfile` — preset defaults (`strict`, `balanced`, `legacy`) for diagnostics behavior.
   - `requireAsciiComments` — non-ASCII characters in comments (live, ~200 ms debounce).
   - `highlightTodos` — surfaces `TODO` / `FIXME` / `XXX` / `HACK` / `BUG` markers in **Problems** as Information.
   - `warnMissingOptionDeclare` — Hint when a `.lss` file has no `Option Declare`.
@@ -40,6 +41,7 @@ All under **`domino-lss-lotusscript.*`**:
 | `enableHclDocCompletions` | `true` | Suggest built-ins / Notes classes with HCL doc links. |
 | `enableHclDocHover` | `true` | Show HCL doc hover for identifiers. |
 | `membersOnlyAfterDot` | `true` | After `obj.`, show only curated Notes members when `obj` resolves to `Notes*`; otherwise an empty list. Disable to fall through to general suggestions. |
+| `diagnosticsProfile` | `balanced` | Diagnostic preset: `strict` (max checks), `balanced` (recommended), `legacy` (reduced noise for older code). Explicit per-check settings still override. |
 | `requireAsciiComments` | `true` | Warn when comments contain non-ASCII characters. |
 | `highlightTodos` | `true` | Surface `TODO` / `FIXME` / `XXX` / `HACK` / `BUG` markers in **Problems**. |
 | `warnMissingOptionDeclare` | `true` | Hint when a `.lss` file is missing `Option Declare`. |
@@ -54,6 +56,16 @@ All under **`domino-lss-lotusscript.*`**:
 | `warnMagicMsgboxConstants` | `true` | Warn on numeric Msgbox flags and suggest `MB_*` constants. |
 | `warnNotesClassTypo` | `true` | Suggest nearest Notes class when type name seems misspelled. |
 | `warnUnusedSymbols` | `true` | Hint for unused local variables, parameters, and private class members. |
+
+### Refactor actions
+
+Available from lightbulb/code actions in `.lss` files:
+
+- Generate `%REM` header for Sub/Function/Property declarations.
+- Add error-handler skeleton to Sub/Function/Property.
+- Extract selected literal to local `Const`.
+- Wrap selected lines with `On Error GoTo ErrorHandler`.
+- Generate `Property Get/Let` or `Property Get/Set` from `Private field As Type`.
 
 ## Theme tuning (semantic tokens)
 
@@ -135,6 +147,12 @@ cursor --install-extension .\domino-lss-lotusscript-<version>.vsix --force
 # .vscode/launch.json points --extensionDevelopmentPath at the workspace
 ```
 
+Run fixture-based scanner regression tests:
+
+```powershell
+npm run test:fixtures
+```
+
 ## Project layout
 
 ```
@@ -155,7 +173,7 @@ semantic-tokens.js           Semantic token provider for richer theming
 impl-typedef.js              Type definition / implementation providers
 document-links.js            Clickable %Include and URL links in .lss files
 commands.js                  Palette commands for common LotusScript templates/actions
-diagnostics.js               ASCII / TODO / Option Declare / structural-block scanners
+diagnostics.js               Diagnostic engine + profile presets + unused-symbol checks
 status-bar.js                Current symbol and per-file diagnostic status items
 document-selectors.js        DocumentSelector / isLssDocument helper
 data/notes-members.json      Curated Notes class members (name / kind / summary)

@@ -11,6 +11,7 @@ Every feature is opt-out. Search settings for `domino-lss-lotusscript` and toggl
 | `enableReferenceCodeLens` | Show `N references` lenses on Sub/Function/Property/Class. |
 | `enableStatusBar` | Show the current `Class.Method` in the status bar. |
 | `membersOnlyAfterDot` | After `obj.`, only suggest curated Notes members for typed `obj`. |
+| `diagnosticsProfile` | Preset diagnostics defaults: `strict`, `balanced`, `legacy`. |
 | `requireAsciiComments` | Warn when comments contain non-ASCII characters. |
 | `highlightTodos` | Surface `TODO`/`FIXME`/`XXX`/`HACK`/`BUG` in Problems. |
 | `warnMissingOptionDeclare` | Hint when `Option Declare` is missing. |
@@ -20,5 +21,6 @@ Every feature is opt-out. Search settings for `domino-lss-lotusscript` and toggl
 | `warnDeprecatedCalls` | Flag deprecated calls and suggest the replacement. |
 | `warnMagicMsgboxConstants` | Hint about magic numbers in `Msgbox`. |
 | `warnNotesClassTypo` | Suggest the closest Notes class on typos. |
+| `warnUnusedSymbols` | Hint on unused local vars, parameters, and private class members. |
 
 > Tip: changes apply immediately — every open `.lss` file is re-scanned automatically.
