@@ -2,7 +2,7 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "infoware",
   "license": "MIT",
   "homepage": "https://github.com/MathiasBlomInfoware/extension-domino-lss#readme",
