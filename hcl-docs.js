@@ -82,6 +82,36 @@ const BUILTIN_NAMES = [
   "Typename",
   "Vartype",
   "Me",
+  "GetThreadInfo",
+  "Lsi_info",
+  "Err",
+  "Erl",
+  "Error",
+  "Resume",
+  "Environ",
+  "Shell",
+  "Sleep",
+  "Beep",
+  "Choose",
+  "IIf",
+  "Switch",
+  "Eof",
+  "Lof",
+  "FileLen",
+  "Dir",
+  "FreeFile",
+  "Round",
+  "DateAdd",
+  "DateDiff",
+  "DatePart",
+  "DateNumber",
+  "DateSerial",
+  "TimeNumber",
+  "TimeSerial",
+  "StrComp",
+  "StrToken",
+  "Space",
+  "String",
 ];
 
 /** Frequent Domino LotusScript classes (used to seed completion entries; HCL classes A–Z is the canonical index). */
@@ -151,6 +181,16 @@ const BUILTIN_DOC_OVERRIDES = {
   messagebox: "LSAZ_MESSAGEBOX_FUNCTION_AND_STATEMENT.html",
   formatdatetime: "LSAZ_DATES.html",
   me: "LSAZ_CHAPTER_7_STATEMENTS_BUILTIN_FUNCTIONS_SUBS_DATA_TYPES_AND_DIRECTIVES.html",
+  // GetThreadInfo and its alias Lsi_Info share the same topic (see HCL).
+  lsi_info: "LSAZ_GETTHREADINFO_FUNCTION.html",
+  lsiinfo: "LSAZ_GETTHREADINFO_FUNCTION.html",
+  // Err, Error, Resume have function+statement variants.
+  err: "LSAZ_ERR_FUNCTION_AND_STATEMENT.html",
+  error: "LSAZ_ERROR_FUNCTION_AND_STATEMENT.html",
+  resume: "LSAZ_RESUME_STATEMENT.html",
+  // Disk/console statements (not functions).
+  beep: "LSAZ_BEEP_STATEMENT.html",
+  sleep: "LSAZ_SLEEP_STATEMENT.html",
 };
 
 const CHAPTER7 = "LSAZ_CHAPTER_7_STATEMENTS_BUILTIN_FUNCTIONS_SUBS_DATA_TYPES_AND_DIRECTIVES.html";
@@ -260,6 +300,49 @@ const BUILTIN_HOVER = {
   lbound: "Lower bound of an array dimension.",
   ubound: "Upper bound of an array dimension.",
   me: "Refers to the **current module instance** in script/class contexts (see language reference).",
+
+  getthreadinfo:
+    "Returns runtime info about the **current LotusScript thread**: current Sub/Function name, current line, calling proc/line, library, etc. Used in error handlers and tracing.\n\n**Typical:** `Print GetThreadInfo(LSI_THREAD_PROC) & \" line \" & GetThreadInfo(LSI_THREAD_LINE)`\n\n**Argument:** an `LSI_THREAD_*` constant — `LSI_THREAD_PROC`, `LSI_THREAD_LINE`, `LSI_THREAD_VERSION`, `LSI_THREAD_VARIANT`, `LSI_THREAD_CALLPROC`, `LSI_THREAD_CALLLINE`, `LSI_THREAD_CLASS`, `LSI_THREAD_LIBRARY`, … (defined in `lsconst.lss`).",
+  lsi_info:
+    "Synonym of **GetThreadInfo** kept for backwards compatibility.\n\n**Typical:** `Print Lsi_info(LSI_THREAD_PROC)`",
+  err:
+    "**Error number** of the most recent run-time error.\n\nUsed inside an `On Error Goto` handler. Reset by `Resume`, `Exit`, `End Sub/Function`, or by assigning `Err = 0`.",
+  erl:
+    "**Line number** of the most recent run-time error (0 if none).",
+  error:
+    "Function form: `Error([errnum])` returns the **error message string** for an error number (or the current error).\n\nStatement form: `Error errnum` raises a run-time error.",
+  resume:
+    "Resumes execution after an error has been handled.\n\n* `Resume` — re-execute the offending statement.\n* `Resume Next` — continue at the statement after the offending one.\n* `Resume label` — jump to a label.",
+  environ:
+    "Reads an **environment variable** by name (or the *n*-th `name=value` pair as a single string when given a number).",
+  shell:
+    "Launches an external program. Returns the **task ID** (Variant) on success.\n\n**Typical:** `Shell \"notepad.exe\", 1`",
+  sleep:
+    "**Pauses** the current thread for the given number of seconds.\n\n**Typical:** `Sleep 0.5`",
+  beep: "Sounds the system beep.",
+  choose:
+    "`Choose(index, val0, val1, …)` — picks the value at *index* from the argument list (1-based).",
+  iif:
+    "Inline if: `IIf(condition, trueValue, falseValue)`.\n\n**Note:** all branches are evaluated; guard side-effects with a real `If`.",
+  switch:
+    "`Switch(c1, v1, c2, v2, …)` — returns the first *vN* whose *cN* is True. Returns Null if none match.",
+  eof: "True when the file pointer is at the **end of file**. `Eof(filenum)`.",
+  lof: "Length of an open file in bytes. `Lof(filenum)`.",
+  filelen: "Length of a file by **path**, in bytes.",
+  dir: "Returns the next file matching a pattern (`Dir(pattern[, attr])`); subsequent calls without arguments continue the iteration.",
+  freefile: "Returns an unused **file number** for use with `Open`.",
+  round: "Rounds a number to a given number of decimal places (banker's rounding on some platforms).",
+  dateadd: "Adds an interval to a date/time (`\"d\"`, `\"m\"`, `\"yyyy\"`, `\"h\"`, `\"n\"`, `\"s\"`, …).",
+  datediff: "Difference between two dates in a given interval.",
+  datepart: "Extracts a part (year, quarter, month, …) from a date.",
+  datenumber: "Builds a **date** from year, month, day.",
+  dateserial: "Synonym of **DateNumber** (year, month, day).",
+  timenumber: "Builds a **time** from hour, minute, second.",
+  timeserial: "Synonym of **TimeNumber** (hour, minute, second).",
+  strcomp: "Compares two strings (0/-1/1). Optional 3rd argument controls case sensitivity.",
+  strtoken: "Splits a string by a delimiter and returns the *n*-th token.",
+  space: "Returns a string of *n* spaces.",
+  string: "Returns a string of *n* copies of a character.",
 };
 
 /** @type {Record<string, string>} */

@@ -127,5 +127,49 @@
     "EOL_LF": { "value": 3 },
     "EOL_CRLF": { "value": 4 },
     "EOL_LFCR": { "value": 5 }
+  },
+  "LotusScript thread info (GetThreadInfo / Lsi_info)": {
+    "LSI_THREAD_LINE": { "value": 1, "summary": "Current source line number." },
+    "LSI_THREAD_PROC": { "value": 2, "summary": "Current Sub/Function/Property name." },
+    "LSI_THREAD_VERSION": { "value": 3, "summary": "LotusScript engine version string." },
+    "LSI_THREAD_VARIANT": { "value": 4, "summary": "LotusScript engine variant string." },
+    "LSI_THREAD_BPLINE": { "value": 5, "summary": "Line number where the current breakpoint was hit." },
+    "LSI_THREAD_BPPROC": { "value": 6, "summary": "Procedure where the current breakpoint was hit." },
+    "LSI_THREAD_CALLPROC": { "value": 7, "summary": "Caller's procedure name." },
+    "LSI_THREAD_CALLLINE": { "value": 8, "summary": "Caller's line number." },
+    "LSI_THREAD_CALLEVENT": { "value": 9, "summary": "Caller's event name (when applicable)." },
+    "LSI_THREAD_CALLERPROC": { "value": 10, "summary": "Top-of-stack caller's procedure name." },
+    "LSI_THREAD_CALLERLINE": { "value": 11, "summary": "Top-of-stack caller's line number." },
+    "LSI_THREAD_CALLEREVENT": { "value": 12, "summary": "Top-of-stack caller's event name." },
+    "LSI_THREAD_CLASS": { "value": 13, "summary": "Class name of the current method (empty if not in a class)." },
+    "LSI_THREAD_BPCLASS": { "value": 14, "summary": "Class at the current breakpoint." },
+    "LSI_THREAD_BPLIBRARY": { "value": 15, "summary": "Script library at the current breakpoint." },
+    "LSI_THREAD_LIBRARY": { "value": 16, "summary": "Current script library name." }
+  },
+  "Msgbox / Messagebox buttons & icons": {
+    "MB_OK": { "value": 0 },
+    "MB_OKCANCEL": { "value": 1 },
+    "MB_ABORTRETRYIGNORE": { "value": 2 },
+    "MB_YESNOCANCEL": { "value": 3 },
+    "MB_YESNO": { "value": 4 },
+    "MB_RETRYCANCEL": { "value": 5 },
+    "MB_ICONSTOP": { "value": 16, "summary": "Critical / stop icon." },
+    "MB_ICONQUESTION": { "value": 32 },
+    "MB_ICONEXCLAMATION": { "value": 48 },
+    "MB_ICONINFORMATION": { "value": 64 },
+    "MB_DEFBUTTON1": { "value": 0 },
+    "MB_DEFBUTTON2": { "value": 256 },
+    "MB_DEFBUTTON3": { "value": 512 },
+    "MB_APPLMODAL": { "value": 0 },
+    "MB_SYSTEMMODAL": { "value": 4096 }
+  },
+  "Msgbox / Messagebox return values": {
+    "IDOK": { "value": 1 },
+    "IDCANCEL": { "value": 2 },
+    "IDABORT": { "value": 3 },
+    "IDRETRY": { "value": 4 },
+    "IDIGNORE": { "value": 5 },
+    "IDYES": { "value": 6 },
+    "IDNO": { "value": 7 }
   }
 }

@@ -96,6 +96,13 @@ language-configuration.json
 
 ## Changelog
 
+### 0.3.1
+- Hover for `GetThreadInfo` / `Lsi_info` (with the standard `LSI_THREAD_*` argument list spelled out), `Err`, `Erl`, `Error`, `Resume`, `Environ`, `Shell`, `Sleep`, `Beep`, `Choose`, `IIf`, `Switch`, `Eof`, `Lof`, `FileLen`, `Dir`, `FreeFile`, `Round`, `DateAdd`/`DateDiff`/`DatePart`/`DateNumber`/`DateSerial`/`TimeNumber`/`TimeSerial`, `StrComp`, `StrToken`, `Space`, `String`.
+- New constant groups in `data/notes-constants.json`:
+  - **LotusScript thread info** — `LSI_THREAD_LINE`, `LSI_THREAD_PROC`, `LSI_THREAD_CALLPROC`, `LSI_THREAD_CALLLINE`, `LSI_THREAD_CLASS`, `LSI_THREAD_LIBRARY`, … (16 values).
+  - **Msgbox/Messagebox** buttons + icons (`MB_*`) and return values (`IDOK`, `IDCANCEL`, `IDYES`, `IDNO`, …).
+- HCL-help URL overrides for `Err`/`Error`/`Resume`/`Beep`/`Sleep` (function+statement / statement-only topics) and `Lsi_info` → `GetThreadInfo` topic.
+
 ### 0.3.0
 - **Snippets**: control flow (`If`, `Else`/`ElseIf`, `For`, `ForAll`, `Do/While`, `Select Case`, `With`), `Class`, `Property Get/Set/Let`, `On Error Goto`, `Initialize`/`Terminate`, NotesSession bootstrap, doc-collection loop, view-navigator iteration, DXL export/import, `NotesStream`, `NotesLog`, `Use`, `'#region`. ~30 snippets total.
 - **Signature help** (`vscode.SignatureHelpProvider`) for ~120 of the most-used Notes APIs across 15 classes; backed by `data/notes-signatures.json` (overlay, leaves `notes-members.json` untouched).
