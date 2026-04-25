@@ -2,7 +2,7 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "publisher": "infoware",
   "license": "MIT",
   "homepage": "https://github.com/MathiasBlomInfoware/extension-domino-lss#readme",
@@ -72,6 +72,21 @@
         "command": "domino-lss-lotusscript.insertAtFirstCode",
         "title": "Jump to first executable line",
         "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.openHelpForSymbol",
+        "title": "Open HCL help for symbol at cursor",
+        "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.insertLsconstInclude",
+        "title": "Insert %Include \"lsconst.lss\"",
+        "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.openBundledDemo",
+        "title": "Open bundled demo (examples/demo.lss)",
+        "category": "LotusScript"
       }
     ],
     "menus": {
@@ -82,23 +97,57 @@
         },
         {
           "command": "domino-lss-lotusscript.insertAgentSkeleton",
-          "when": "editorLangId == lotusscript"
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
         },
         {
           "command": "domino-lss-lotusscript.insertSessionAndDb",
-          "when": "editorLangId == lotusscript"
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
         },
         {
           "command": "domino-lss-lotusscript.toggleOptionDeclare",
-          "when": "editorLangId == lotusscript"
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
         },
         {
           "command": "domino-lss-lotusscript.insertAtFirstCode",
-          "when": "editorLangId == lotusscript"
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
         },
         {
           "command": "domino-lss-lotusscript.openLsconstReference",
-          "when": "editorLangId == lotusscript"
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
+        },
+        {
+          "command": "domino-lss-lotusscript.openHelpForSymbol",
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
+        },
+        {
+          "command": "domino-lss-lotusscript.insertLsconstInclude",
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
+        },
+        {
+          "command": "domino-lss-lotusscript.openBundledDemo",
+          "when": "editorLangId == lotusscript || resourceExtname == '.lss'"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "domino-lss-lotusscript.openHelpForSymbol",
+          "when": "editorTextFocus && (editorLangId == lotusscript || resourceExtname == '.lss')",
+          "group": "lotusscript@1"
+        },
+        {
+          "command": "domino-lss-lotusscript.insertLsconstInclude",
+          "when": "editorTextFocus && (editorLangId == lotusscript || resourceExtname == '.lss')",
+          "group": "lotusscript@2"
+        },
+        {
+          "command": "domino-lss-lotusscript.insertAtFirstCode",
+          "when": "editorTextFocus && (editorLangId == lotusscript || resourceExtname == '.lss')",
+          "group": "lotusscript@3"
+        },
+        {
+          "command": "domino-lss-lotusscript.openBundledDemo",
+          "when": "editorTextFocus && (editorLangId == lotusscript || resourceExtname == '.lss')",
+          "group": "lotusscript@4"
         }
       ]
     },

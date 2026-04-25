@@ -320,4 +320,9 @@ function registerHclHover(context) {
   );
 }
 
-module.exports = { registerHclHover };
+module.exports = {
+  registerHclHover,
+  scanDirectiveAtColumn,
+  parseNotesDotMember,
+  resolveHoverIdentifier,
+};

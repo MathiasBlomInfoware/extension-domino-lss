@@ -117,11 +117,16 @@ Suggested visual mapping:
 ## Commands
 
 - **`Open HCL Domino Designer help in browser`** (`domino-lss-lotusscript.openDesignerHelp`) — internal command used by hover/completion links. Restricted to `https://help.hcl-software.com/` URLs.
+- **`Open HCL help for symbol at cursor`** (`domino-lss-lotusscript.openHelpForSymbol`) — opens the matching HCL topic for built-ins, keywords, Notes classes, `%` directives, `Notes*` member access (class topic), and Domino constants (lsconst index).
+- **`Insert %Include "lsconst.lss"`** (`domino-lss-lotusscript.insertLsconstInclude`) — adds the include after headers if it is not already present.
+- **`Open bundled demo (examples/demo.lss)`** (`domino-lss-lotusscript.openBundledDemo`)
 - **`Insert agent skeleton (Initialize + NotesLog + error handler)`** (`domino-lss-lotusscript.insertAgentSkeleton`)
 - **`Insert NotesSession + CurrentDatabase boilerplate`** (`domino-lss-lotusscript.insertSessionAndDb`)
 - **`Toggle 'Option Declare' at top of file`** (`domino-lss-lotusscript.toggleOptionDeclare`)
 - **`Open lsconst.lss constants reference (HCL help)`** (`domino-lss-lotusscript.openLsconstReference`)
 - **`Jump to first executable line`** (`domino-lss-lotusscript.insertAtFirstCode`)
+
+Right-click in a `.lss` editor for the same shortcuts under the **lotusscript** context group.
 
 ## Snippet shortcuts
 

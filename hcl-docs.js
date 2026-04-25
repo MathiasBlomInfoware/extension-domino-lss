@@ -1310,6 +1310,69 @@ function hoverMarkdownForWord(word, version, ctx) {
   return undefined;
 }
 
+/**
+ * HTTPS URL for a `%…` directive token (same topic as {@link directiveHoverMarkdown}).
+ * @param {string} directive
+ * @param {unknown} version
+ * @returns {string | undefined}
+ */
+function directiveHelpUrl(directive, version) {
+  const v = effectiveHelpVersion(version);
+  const key = String(directive ?? "")
+    .replace(/^%/, "")
+    .replace(/\s+/g, "")
+    .trim()
+    .toLowerCase();
+  const t = DIRECTIVE_HOVER[key];
+  if (!t) {
+    return undefined;
+  }
+  return basicBase(v) + t.file;
+}
+
+/**
+ * HTTPS URL for HCL help for an identifier (built-in, keyword, Notes class, type in `As` context).
+ * @param {string} word
+ * @param {unknown} version
+ * @param {{ lineText?: string; wordStartCol?: number }} [ctx]
+ * @returns {string | undefined}
+ */
+function helpUrlForWord(word, version, ctx) {
+  const v = effectiveHelpVersion(version);
+  const raw = word.replace(/\$/g, "").trim();
+  if (!raw) {
+    return undefined;
+  }
+  const lower = raw.toLowerCase();
+
+  if (TYPE_HOVER[lower] && isTypeAnnotationContext(ctx?.lineText, ctx?.wordStartCol)) {
+    return basicBase(v) + TYPE_HOVER[lower].file;
+  }
+
+  const builtinHit = BUILTIN_NAMES.find((n) => n.toLowerCase() === lower);
+  if (builtinHit) {
+    return basicBase(v) + builtinDocFile(builtinHit);
+  }
+
+  if (/^notes/i.test(raw)) {
+    const cls = raw.replace(/[^A-Za-z0-9_]/g, "");
+    if (cls.length >= 6) {
+      return notesClassTopicUrl(v, cls);
+    }
+  }
+
+  if (KEYWORD_DOC.has(lower)) {
+    const ovr = KEYWORD_DOC_OVERRIDES[lower];
+    return basicBase(v) + (ovr ? ovr.file : CHAPTER7);
+  }
+
+  if (TYPE_HOVER[lower]) {
+    return basicBase(v) + TYPE_HOVER[lower].file;
+  }
+
+  return undefined;
+}
+
 module.exports = {
   BUILTIN_NAMES,
   NOTES_CLASSES,
@@ -1327,6 +1390,8 @@ module.exports = {
   hoverMarkdownForWord,
   typeHoverMarkdown,
   directiveHoverMarkdown,
+  directiveHelpUrl,
+  helpUrlForWord,
   normalizeHelpVersion,
   effectiveHelpVersion,
 };

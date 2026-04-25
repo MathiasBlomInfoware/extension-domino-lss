@@ -60,4 +60,19 @@ function formatValue(v) {
   return String(v);
 }
 
-module.exports = { lookupConstant, constantHoverMarkdown, constantCompletionItems, FLAT };
+/**
+ * HCL topic listing lsconst.lss constants (Domino LotusScript).
+ * @param {string} versionSegment e.g. `14.5.1`
+ */
+function constantHelpListUrl(versionSegment) {
+  const v = String(versionSegment || "14.5.1").trim() || "14.5.1";
+  return `https://help.hcl-software.com/dom_designer/${v}/basic/LSAZ_LIST_OF_CONSTANTS_LSCONST_LSS.html`;
+}
+
+module.exports = {
+  lookupConstant,
+  constantHoverMarkdown,
+  constantCompletionItems,
+  constantHelpListUrl,
+  FLAT,
+};

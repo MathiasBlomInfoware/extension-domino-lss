@@ -2,6 +2,11 @@
 
 All notable changes to `infoware.domino-lss-lotusscript` are documented here.
 
+## 1.1.1
+
+- Editor context menu and palette commands: open HCL help for the symbol at the cursor, insert `%Include "lsconst.lss"`, jump to first code line, and open the bundled `examples/demo.lss` sample.
+- Command palette entries for `.lss` files also appear when the file is plain text but still uses the `.lss` extension.
+
 ## 1.1.0
 
 - Added diagnostics profiles (`strict`, `balanced`, `legacy`) so teams can switch default lint intensity quickly while still overriding individual checks.

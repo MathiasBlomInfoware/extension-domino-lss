@@ -239,6 +239,30 @@ function tryNotesMemberCompletion(document, position, version, membersOnlyWhenDo
   return undefined;
 }
 
+/**
+ * When the cursor is on `member` in `notesObj.member`, open the Notes class topic for the resolved type.
+ * @param {vscode.TextDocument} document
+ * @param {string} lineText
+ * @param {string} word
+ * @param {number} wordStartCol
+ * @param {string} version
+ * @returns {string | undefined}
+ */
+function notesObjectMemberHelpUrl(document, lineText, word, wordStartCol, version) {
+  const before = lineText.slice(0, wordStartCol);
+  const m = before.match(/(\w+)\.\s*$/);
+  if (!m) {
+    return undefined;
+  }
+  const obj = m[1];
+  const map = getNotesVarTypeMap(document);
+  const notesType = map.get(obj.toLowerCase());
+  if (!notesType || !/^Notes/i.test(notesType)) {
+    return undefined;
+  }
+  return notesClassTopicUrl(version, notesType);
+}
+
 module.exports = {
   NOTES_MEMBERS,
   buildNotesVarTypeMap,
@@ -246,4 +270,5 @@ module.exports = {
   dropNotesVarTypeMapForUri,
   tryNotesMemberCompletion,
   tryNotesMemberHover,
+  notesObjectMemberHelpUrl,
 };
