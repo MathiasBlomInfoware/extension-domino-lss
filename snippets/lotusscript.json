@@ -11,7 +11,7 @@
       "\t$0",
       "End Sub"
     ],
-    "description": "Sub with %REM … %END REM (Domino-style header)"
+    "description": "Sub with %REM \u2026 %END REM (Domino-style header)"
   },
   "Function with %REM header": {
     "prefix": "funrem",
@@ -25,11 +25,264 @@
       "\t$0",
       "End Function"
     ],
-    "description": "Function with %REM … %END REM (Domino-style header)"
+    "description": "Function with %REM \u2026 %END REM (Domino-style header)"
   },
   "%REM block only": {
     "prefix": ["pctrem", "%rem"],
     "body": ["%REM", "\t${1}", "\tDescription: ${2}", "%END REM", ""],
-    "description": "Empty %REM … %END REM block"
+    "description": "Empty %REM \u2026 %END REM block"
+  },
+
+  "If \u2026 Then \u2026 End If": {
+    "prefix": ["ift", "if"],
+    "body": ["If ${1:condition} Then", "\t$0", "End If"],
+    "description": "If \u2026 Then \u2026 End If"
+  },
+  "If \u2026 Then \u2026 Else \u2026 End If": {
+    "prefix": ["ifel", "ifelse"],
+    "body": ["If ${1:condition} Then", "\t$2", "Else", "\t$0", "End If"],
+    "description": "If \u2026 Then \u2026 Else \u2026 End If"
+  },
+  "If \u2026 ElseIf \u2026 Else \u2026 End If": {
+    "prefix": ["ifelseif"],
+    "body": [
+      "If ${1:condition} Then",
+      "\t$2",
+      "ElseIf ${3:condition} Then",
+      "\t$4",
+      "Else",
+      "\t$0",
+      "End If"
+    ],
+    "description": "If / ElseIf / Else / End If"
+  },
+
+  "For i = 0 To Ubound(arr)": {
+    "prefix": ["for", "fori"],
+    "body": ["For ${1:i} = ${2:0} To ${3:Ubound(${4:arr})}", "\t$0", "Next ${1:i}"],
+    "description": "For i = 0 To Ubound(arr)"
+  },
+  "For Each x In coll": {
+    "prefix": ["foreach"],
+    "body": ["ForAll ${1:x} In ${2:coll}", "\t$0", "End ForAll"],
+    "description": "ForAll \u2026 In \u2026 End ForAll (LotusScript ForAll)"
+  },
+  "Do While \u2026 Loop": {
+    "prefix": ["dowhile", "do"],
+    "body": ["Do While ${1:condition}", "\t$0", "Loop"],
+    "description": "Do While \u2026 Loop"
+  },
+  "Do \u2026 Loop Until": {
+    "prefix": ["dountil"],
+    "body": ["Do", "\t$0", "Loop Until ${1:condition}"],
+    "description": "Do \u2026 Loop Until"
+  },
+  "While \u2026 Wend": {
+    "prefix": ["while", "whilewend"],
+    "body": ["While ${1:condition}", "\t$0", "Wend"],
+    "description": "While \u2026 Wend"
+  },
+  "Select Case": {
+    "prefix": ["select", "selcase"],
+    "body": [
+      "Select Case ${1:value}",
+      "Case ${2:0}",
+      "\t$3",
+      "Case Else",
+      "\t$0",
+      "End Select"
+    ],
+    "description": "Select Case \u2026 End Select"
+  },
+  "With \u2026 End With": {
+    "prefix": ["with"],
+    "body": ["With ${1:obj}", "\t.$0", "End With"],
+    "description": "With \u2026 End With"
+  },
+
+  "On Error Goto handler": {
+    "prefix": ["onerr", "onerror"],
+    "body": [
+      "On Error Goto ${1:errh}",
+      "$0",
+      "Exit ${2|Sub,Function|}",
+      "${1:errh}:",
+      "\tMessagebox \"Error \" & Err & \": \" & Error$ & \" at line \" & Erl, 16, \"${3:Error}\"",
+      "\tResume Next"
+    ],
+    "description": "On Error Goto with handler"
+  },
+
+  "Class \u2026 End Class": {
+    "prefix": ["class"],
+    "body": [
+      "Class ${1:Name}",
+      "\tPrivate ${2:m_field} As ${3:Variant}",
+      "",
+      "\tSub New(${4:})",
+      "\t\t$0",
+      "\tEnd Sub",
+      "",
+      "\tSub Delete()",
+      "\tEnd Sub",
+      "End Class"
+    ],
+    "description": "Class with constructor / destructor"
+  },
+  "Property Get": {
+    "prefix": ["propget"],
+    "body": [
+      "Public Property Get ${1:Name}() As ${2:Variant}",
+      "\t${1:Name} = ${3:m_${1:Name}}",
+      "End Property"
+    ],
+    "description": "Property Get \u2026 End Property"
+  },
+  "Property Set": {
+    "prefix": ["propset"],
+    "body": [
+      "Public Property Set ${1:Name} As ${2:NotesDocument}",
+      "\tSet ${3:m_${1:Name}} = ${1:Name}",
+      "End Property"
+    ],
+    "description": "Property Set \u2026 End Property"
+  },
+  "Property Let": {
+    "prefix": ["proplet"],
+    "body": [
+      "Public Property Let ${1:Name} As ${2:Variant}",
+      "\t${3:m_${1:Name}} = ${1:Name}",
+      "End Property"
+    ],
+    "description": "Property Let \u2026 End Property"
+  },
+
+  "Initialize event": {
+    "prefix": ["initialize", "init"],
+    "body": ["Sub Initialize", "\t$0", "End Sub"],
+    "description": "Agent / module Initialize event"
+  },
+  "Terminate event": {
+    "prefix": ["terminate", "term"],
+    "body": ["Sub Terminate", "\t$0", "End Sub"],
+    "description": "Module Terminate event"
+  },
+
+  "Notes session bootstrap": {
+    "prefix": ["nsboot", "session", "newsession"],
+    "body": [
+      "Dim s As New NotesSession",
+      "Dim db As NotesDatabase",
+      "Set db = s.CurrentDatabase",
+      "$0"
+    ],
+    "description": "New NotesSession + CurrentDatabase"
+  },
+  "Open NotesDatabase by server/path": {
+    "prefix": ["nsdb", "getdb"],
+    "body": [
+      "Dim s As New NotesSession",
+      "Dim db As NotesDatabase",
+      "Set db = s.GetDatabase(${1:\"\"}, ${2:\"yourdb.nsf\"})",
+      "If db Is Nothing Or Not db.IsOpen Then",
+      "\tMessagebox \"Could not open database\", 16, \"Error\"",
+      "\tExit Sub",
+      "End If",
+      "$0"
+    ],
+    "description": "Get and open a NotesDatabase"
+  },
+  "Loop NotesDocumentCollection": {
+    "prefix": ["nscoll", "loopcoll"],
+    "body": [
+      "Dim doc As NotesDocument",
+      "Dim nextDoc As NotesDocument",
+      "Set doc = ${1:coll}.GetFirstDocument",
+      "Do While Not doc Is Nothing",
+      "\tSet nextDoc = ${1:coll}.GetNextDocument(doc)",
+      "\t$0",
+      "\tSet doc = nextDoc",
+      "Loop"
+    ],
+    "description": "Iterate a NotesDocumentCollection (cycle-through pattern)"
+  },
+  "Iterate NotesView via Navigator": {
+    "prefix": ["nsnav", "viewnav"],
+    "body": [
+      "Dim view As NotesView",
+      "Set view = ${1:db}.GetView(${2:\"View Name\"})",
+      "Dim nav As NotesViewNavigator",
+      "Set nav = view.CreateViewNav()",
+      "Dim entry As NotesViewEntry",
+      "Set entry = nav.GetFirst()",
+      "Do While Not entry Is Nothing",
+      "\t$0",
+      "\tSet entry = nav.GetNext(entry)",
+      "Loop"
+    ],
+    "description": "Iterate a NotesView using a NotesViewNavigator"
+  },
+  "DXL export of selection": {
+    "prefix": ["dxlexp", "dxlexport"],
+    "body": [
+      "Dim s As New NotesSession",
+      "Dim exporter As NotesDXLExporter",
+      "Set exporter = s.CreateDXLExporter()",
+      "exporter.OutputDOCTYPE = False",
+      "Dim dxl As String",
+      "dxl = exporter.Export(${1:source})",
+      "$0"
+    ],
+    "description": "Export a doc/collection/database to DXL"
+  },
+  "DXL import into database": {
+    "prefix": ["dxlimp", "dxlimport"],
+    "body": [
+      "Dim s As New NotesSession",
+      "Dim importer As NotesDXLImporter",
+      "Set importer = s.CreateDXLImporter()",
+      "Call importer.SetInput(${1:dxlString})",
+      "Call importer.Import(${1:dxlString}, ${2:db})",
+      "$0"
+    ],
+    "description": "Import DXL into a NotesDatabase"
+  },
+  "NotesStream open file": {
+    "prefix": ["nstream", "stream"],
+    "body": [
+      "Dim s As New NotesSession",
+      "Dim stream As NotesStream",
+      "Set stream = s.CreateStream()",
+      "If Not stream.Open(${1:\"c:\\\\path\\\\file.txt\"}, ${2:\"UTF-8\"}) Then",
+      "\tMessagebox \"Could not open file\", 16, \"Error\"",
+      "\tExit Sub",
+      "End If",
+      "$0",
+      "Call stream.Close()"
+    ],
+    "description": "Open a file via NotesStream"
+  },
+  "NotesLog (agent log)": {
+    "prefix": ["nslog", "log"],
+    "body": [
+      "Dim s As New NotesSession",
+      "Dim log As NotesLog",
+      "Set log = s.CreateLog(${1:\"My agent\"})",
+      "Call log.OpenAgentLog()",
+      "$0",
+      "Call log.LogAction(\"Done\")",
+      "Call log.Close()"
+    ],
+    "description": "Create + open a NotesLog (agent log target)"
+  },
+  "Use \u2026 / Uselsx": {
+    "prefix": ["use", "uselsx"],
+    "body": ["Use \"${1:LibraryName}\""],
+    "description": "Use script library"
+  },
+  "Region": {
+    "prefix": ["region", "#region"],
+    "body": ["'#region ${1:title}", "$0", "'#endregion"],
+    "description": "Foldable comment region"
   }
 }

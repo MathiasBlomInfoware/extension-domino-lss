@@ -1,0 +1,651 @@
+{
+  "NotesSession": {
+    "GetDatabase": {
+      "signature": "GetDatabase(server As String, dbFile As String, [createOnFail As Boolean = True]) As NotesDatabase",
+      "params": [
+        { "label": "server As String", "doc": "Server name. Empty string for local." },
+        { "label": "dbFile As String", "doc": "Path to the .nsf relative to the data directory." },
+        { "label": "createOnFail As Boolean = True", "doc": "If True, returns a closed handle for nonexistent paths instead of Nothing." }
+      ],
+      "returns": "NotesDatabase"
+    },
+    "CreateDateTime": {
+      "signature": "CreateDateTime(date As String) As NotesDateTime",
+      "params": [{ "label": "date As String", "doc": "Date/time string in any locale-acceptable format." }],
+      "returns": "NotesDateTime"
+    },
+    "CreateDXLExporter": {
+      "signature": "CreateDXLExporter() As NotesDXLExporter",
+      "params": [],
+      "returns": "NotesDXLExporter"
+    },
+    "CreateDXLImporter": {
+      "signature": "CreateDXLImporter([dxl As String], [database As NotesDatabase]) As NotesDXLImporter",
+      "params": [
+        { "label": "dxl As String", "doc": "Optional initial DXL input." },
+        { "label": "database As NotesDatabase", "doc": "Optional default destination database." }
+      ],
+      "returns": "NotesDXLImporter"
+    },
+    "CreateLog": {
+      "signature": "CreateLog(name As String) As NotesLog",
+      "params": [{ "label": "name As String", "doc": "Program name shown in log entries." }],
+      "returns": "NotesLog"
+    },
+    "CreateName": {
+      "signature": "CreateName(name As String, [language As String]) As NotesName",
+      "params": [
+        { "label": "name As String", "doc": "Canonical or abbreviated name." },
+        { "label": "language As String", "doc": "Optional language tag." }
+      ],
+      "returns": "NotesName"
+    },
+    "CreateRichTextStyle": {
+      "signature": "CreateRichTextStyle() As NotesRichTextStyle",
+      "params": [],
+      "returns": "NotesRichTextStyle"
+    },
+    "CreateRichTextParagraphStyle": {
+      "signature": "CreateRichTextParagraphStyle() As NotesRichTextParagraphStyle",
+      "params": [],
+      "returns": "NotesRichTextParagraphStyle"
+    },
+    "CreateStream": {
+      "signature": "CreateStream() As NotesStream",
+      "params": [],
+      "returns": "NotesStream"
+    },
+    "Evaluate": {
+      "signature": "Evaluate(formula As String, [doc As NotesDocument]) As Variant",
+      "params": [
+        { "label": "formula As String", "doc": "@-formula to evaluate." },
+        { "label": "doc As NotesDocument", "doc": "Optional context document." }
+      ],
+      "returns": "Variant array"
+    },
+    "GetURL": {
+      "signature": "GetURL(url As String, [reload As Boolean]) As String",
+      "params": [
+        { "label": "url As String", "doc": "URL to fetch." },
+        { "label": "reload As Boolean", "doc": "Bypass URL cache when True." }
+      ],
+      "returns": "String"
+    },
+    "GetEnvironmentString": {
+      "signature": "GetEnvironmentString(name As String, [isSystem As Boolean]) As String",
+      "params": [
+        { "label": "name As String", "doc": "notes.ini variable name." },
+        { "label": "isSystem As Boolean", "doc": "When True, look in the system area." }
+      ],
+      "returns": "String"
+    },
+    "GetEnvironmentValue": {
+      "signature": "GetEnvironmentValue(name As String, [isSystem As Boolean]) As Variant",
+      "params": [
+        { "label": "name As String", "doc": "notes.ini variable name." },
+        { "label": "isSystem As Boolean", "doc": "When True, look in the system area." }
+      ],
+      "returns": "Variant (numeric)"
+    },
+    "SetEnvironmentVar": {
+      "signature": "SetEnvironmentVar(name As String, value As Variant, [isSystem As Boolean])",
+      "params": [
+        { "label": "name As String" },
+        { "label": "value As Variant" },
+        { "label": "isSystem As Boolean" }
+      ]
+    },
+    "SendConsoleCommand": {
+      "signature": "SendConsoleCommand(server As String, command As String) As String",
+      "params": [
+        { "label": "server As String", "doc": "Target Domino server name." },
+        { "label": "command As String", "doc": "Command line to execute on the server console." }
+      ],
+      "returns": "String"
+    }
+  },
+
+  "NotesDatabase": {
+    "FTSearch": {
+      "signature": "FTSearch(query As String, [maxDocs As Integer], [sortOpt As Integer], [otherOpt As Integer]) As NotesDocumentCollection",
+      "params": [
+        { "label": "query As String", "doc": "Full-text query string." },
+        { "label": "maxDocs As Integer", "doc": "Max documents to return (0 = all)." },
+        { "label": "sortOpt As Integer", "doc": "FT_SCORES (8) | FT_DATE_DES (1) | FT_DATE_ASC (2)." },
+        { "label": "otherOpt As Integer", "doc": "FT_FUZZY (16384) | FT_STEMS (512) etc." }
+      ],
+      "returns": "NotesDocumentCollection"
+    },
+    "Search": {
+      "signature": "Search(formula As String, [endDate As NotesDateTime], [maxDocs As Integer]) As NotesDocumentCollection",
+      "params": [
+        { "label": "formula As String", "doc": "Selection formula (SELECT \u2026)." },
+        { "label": "endDate As NotesDateTime", "doc": "Optional cut-off date for modified-since." },
+        { "label": "maxDocs As Integer", "doc": "Max documents to return (0 = all)." }
+      ],
+      "returns": "NotesDocumentCollection"
+    },
+    "GetDocumentByID": {
+      "signature": "GetDocumentByID(noteId As String) As NotesDocument",
+      "params": [{ "label": "noteId As String", "doc": "Hex note ID, e.g. \"8B6\"." }],
+      "returns": "NotesDocument"
+    },
+    "GetDocumentByUNID": {
+      "signature": "GetDocumentByUNID(unid As String) As NotesDocument",
+      "params": [{ "label": "unid As String", "doc": "32-char universal document ID." }],
+      "returns": "NotesDocument"
+    },
+    "GetView": {
+      "signature": "GetView(name As String) As NotesView",
+      "params": [{ "label": "name As String", "doc": "View name or alias." }],
+      "returns": "NotesView"
+    },
+    "GetAgent": {
+      "signature": "GetAgent(name As String) As NotesAgent",
+      "params": [{ "label": "name As String", "doc": "Agent name (without alias)." }],
+      "returns": "NotesAgent"
+    },
+    "GetProfileDocument": {
+      "signature": "GetProfileDocument(profile As String, [uniqueKey As String]) As NotesDocument",
+      "params": [
+        { "label": "profile As String", "doc": "Profile name." },
+        { "label": "uniqueKey As String", "doc": "Optional key for per-user profiles." }
+      ],
+      "returns": "NotesDocument"
+    },
+    "CreateDocument": {
+      "signature": "CreateDocument() As NotesDocument",
+      "params": [],
+      "returns": "NotesDocument"
+    },
+    "Open": {
+      "signature": "Open(server As String, dbFile As String) As Boolean",
+      "params": [
+        { "label": "server As String" },
+        { "label": "dbFile As String" }
+      ],
+      "returns": "Boolean"
+    },
+    "GrantAccess": {
+      "signature": "GrantAccess(name As String, level As Integer)",
+      "params": [
+        { "label": "name As String" },
+        { "label": "level As Integer", "doc": "ACLLEVEL_NOACCESS (0) \u2026 ACLLEVEL_MANAGER (6)." }
+      ]
+    },
+    "QueryAccess": {
+      "signature": "QueryAccess(name As String) As Integer",
+      "params": [{ "label": "name As String" }],
+      "returns": "Integer (ACLLEVEL_*)"
+    }
+  },
+
+  "NotesDocument": {
+    "GetItemValue": {
+      "signature": "GetItemValue(itemName As String) As Variant",
+      "params": [{ "label": "itemName As String", "doc": "Field name." }],
+      "returns": "Variant array"
+    },
+    "ReplaceItemValue": {
+      "signature": "ReplaceItemValue(itemName As String, value As Variant) As NotesItem",
+      "params": [
+        { "label": "itemName As String" },
+        { "label": "value As Variant", "doc": "Scalar or array; types are mapped automatically." }
+      ],
+      "returns": "NotesItem"
+    },
+    "AppendItemValue": {
+      "signature": "AppendItemValue(itemName As String, value As Variant) As NotesItem",
+      "params": [
+        { "label": "itemName As String" },
+        { "label": "value As Variant" }
+      ],
+      "returns": "NotesItem"
+    },
+    "GetFirstItem": {
+      "signature": "GetFirstItem(itemName As String) As NotesItem",
+      "params": [{ "label": "itemName As String" }],
+      "returns": "NotesItem"
+    },
+    "HasItem": {
+      "signature": "HasItem(itemName As String) As Boolean",
+      "params": [{ "label": "itemName As String" }],
+      "returns": "Boolean"
+    },
+    "RemoveItem": {
+      "signature": "RemoveItem(itemName As String)",
+      "params": [{ "label": "itemName As String" }]
+    },
+    "Save": {
+      "signature": "Save(force As Boolean, createResponse As Boolean, [markRead As Boolean]) As Boolean",
+      "params": [
+        { "label": "force As Boolean", "doc": "Save even if another save is in progress." },
+        { "label": "createResponse As Boolean", "doc": "Save replication conflict as response." },
+        { "label": "markRead As Boolean", "doc": "Mark the document as read for the current user." }
+      ],
+      "returns": "Boolean"
+    },
+    "Send": {
+      "signature": "Send(attachForm As Boolean, [recipients As Variant])",
+      "params": [
+        { "label": "attachForm As Boolean", "doc": "Embed the form when sending." },
+        { "label": "recipients As Variant", "doc": "String or string-array of recipients (overrides SendTo)." }
+      ]
+    },
+    "CopyToDatabase": {
+      "signature": "CopyToDatabase(database As NotesDatabase) As NotesDocument",
+      "params": [{ "label": "database As NotesDatabase" }],
+      "returns": "NotesDocument"
+    },
+    "MakeResponse": {
+      "signature": "MakeResponse(parent As NotesDocument)",
+      "params": [{ "label": "parent As NotesDocument" }]
+    },
+    "PutInFolder": {
+      "signature": "PutInFolder(folder As String, [createOnFail As Boolean = True])",
+      "params": [
+        { "label": "folder As String" },
+        { "label": "createOnFail As Boolean = True" }
+      ]
+    },
+    "RemoveFromFolder": {
+      "signature": "RemoveFromFolder(folder As String)",
+      "params": [{ "label": "folder As String" }]
+    },
+    "Remove": {
+      "signature": "Remove(force As Boolean) As Boolean",
+      "params": [{ "label": "force As Boolean" }],
+      "returns": "Boolean"
+    },
+    "GetAttachment": {
+      "signature": "GetAttachment(fileName As String) As NotesEmbeddedObject",
+      "params": [{ "label": "fileName As String" }],
+      "returns": "NotesEmbeddedObject"
+    },
+    "CreateRichTextItem": {
+      "signature": "CreateRichTextItem(itemName As String) As NotesRichTextItem",
+      "params": [{ "label": "itemName As String" }],
+      "returns": "NotesRichTextItem"
+    },
+    "CreateMIMEEntity": {
+      "signature": "CreateMIMEEntity([itemName As String = \"Body\"]) As NotesMIMEEntity",
+      "params": [{ "label": "itemName As String = \"Body\"" }],
+      "returns": "NotesMIMEEntity"
+    },
+    "ComputeWithForm": {
+      "signature": "ComputeWithForm(documentContext As Boolean, raiseError As Boolean) As Boolean",
+      "params": [
+        { "label": "documentContext As Boolean", "doc": "Use the form's input formulas." },
+        { "label": "raiseError As Boolean", "doc": "Raise an error on validation failure." }
+      ],
+      "returns": "Boolean"
+    },
+    "Encrypt": {
+      "signature": "Encrypt() As Boolean",
+      "params": [],
+      "returns": "Boolean"
+    },
+    "Sign": {
+      "signature": "Sign()",
+      "params": []
+    }
+  },
+
+  "NotesDocumentCollection": {
+    "GetFirstDocument": { "signature": "GetFirstDocument() As NotesDocument", "params": [], "returns": "NotesDocument" },
+    "GetNextDocument": {
+      "signature": "GetNextDocument(doc As NotesDocument) As NotesDocument",
+      "params": [{ "label": "doc As NotesDocument" }],
+      "returns": "NotesDocument"
+    },
+    "GetLastDocument": { "signature": "GetLastDocument() As NotesDocument", "params": [], "returns": "NotesDocument" },
+    "GetPrevDocument": {
+      "signature": "GetPrevDocument(doc As NotesDocument) As NotesDocument",
+      "params": [{ "label": "doc As NotesDocument" }],
+      "returns": "NotesDocument"
+    },
+    "GetNthDocument": {
+      "signature": "GetNthDocument(index As Long) As NotesDocument",
+      "params": [{ "label": "index As Long", "doc": "1-based index." }],
+      "returns": "NotesDocument"
+    },
+    "FTSearch": {
+      "signature": "FTSearch(query As String, [maxDocs As Integer]) As NotesDocumentCollection",
+      "params": [
+        { "label": "query As String" },
+        { "label": "maxDocs As Integer" }
+      ],
+      "returns": "NotesDocumentCollection"
+    },
+    "StampAll": {
+      "signature": "StampAll(itemName As String, value As Variant)",
+      "params": [
+        { "label": "itemName As String" },
+        { "label": "value As Variant" }
+      ]
+    },
+    "PutAllInFolder": {
+      "signature": "PutAllInFolder(folder As String, [createOnFail As Boolean = True])",
+      "params": [
+        { "label": "folder As String" },
+        { "label": "createOnFail As Boolean = True" }
+      ]
+    },
+    "RemoveAll": { "signature": "RemoveAll(force As Boolean)", "params": [{ "label": "force As Boolean" }] },
+    "Intersect": { "signature": "Intersect(other As Variant)", "params": [{ "label": "other As Variant", "doc": "NotesView, NotesDocumentCollection, or note ID." }] },
+    "Subtract": { "signature": "Subtract(other As Variant)", "params": [{ "label": "other As Variant" }] }
+  },
+
+  "NotesView": {
+    "GetDocumentByKey": {
+      "signature": "GetDocumentByKey(key As Variant, [exact As Boolean = False]) As NotesDocument",
+      "params": [
+        { "label": "key As Variant", "doc": "Single value or array (one per sorted column)." },
+        { "label": "exact As Boolean = False", "doc": "True for exact match." }
+      ],
+      "returns": "NotesDocument"
+    },
+    "GetEntryByKey": {
+      "signature": "GetEntryByKey(key As Variant, [exact As Boolean = False]) As NotesViewEntry",
+      "params": [
+        { "label": "key As Variant" },
+        { "label": "exact As Boolean = False" }
+      ],
+      "returns": "NotesViewEntry"
+    },
+    "GetAllDocumentsByKey": {
+      "signature": "GetAllDocumentsByKey(key As Variant, [exact As Boolean = False]) As NotesDocumentCollection",
+      "params": [
+        { "label": "key As Variant" },
+        { "label": "exact As Boolean = False" }
+      ],
+      "returns": "NotesDocumentCollection"
+    },
+    "FTSearch": {
+      "signature": "FTSearch(query As String, [maxDocs As Integer]) As Long",
+      "params": [
+        { "label": "query As String" },
+        { "label": "maxDocs As Integer" }
+      ],
+      "returns": "Long"
+    },
+    "Refresh": { "signature": "Refresh()", "params": [] },
+    "GetFirstDocument": { "signature": "GetFirstDocument() As NotesDocument", "params": [], "returns": "NotesDocument" },
+    "GetNextDocument": {
+      "signature": "GetNextDocument(doc As NotesDocument) As NotesDocument",
+      "params": [{ "label": "doc As NotesDocument" }],
+      "returns": "NotesDocument"
+    }
+  },
+
+  "NotesItem": {
+    "AppendToTextList": {
+      "signature": "AppendToTextList(value As Variant)",
+      "params": [{ "label": "value As Variant" }]
+    },
+    "Contains": {
+      "signature": "Contains(value As Variant) As Boolean",
+      "params": [{ "label": "value As Variant" }],
+      "returns": "Boolean"
+    },
+    "AbstractText": {
+      "signature": "AbstractText(maxLen As Integer, dropVowels As Boolean, useDictionary As Boolean) As String",
+      "params": [
+        { "label": "maxLen As Integer" },
+        { "label": "dropVowels As Boolean" },
+        { "label": "useDictionary As Boolean" }
+      ],
+      "returns": "String"
+    },
+    "CopyItemToDocument": {
+      "signature": "CopyItemToDocument(doc As NotesDocument, [newName As String]) As NotesItem",
+      "params": [
+        { "label": "doc As NotesDocument" },
+        { "label": "newName As String" }
+      ],
+      "returns": "NotesItem"
+    }
+  },
+
+  "NotesDateTime": {
+    "AdjustDay": { "signature": "AdjustDay(n As Integer, [preserveLocalTime As Boolean])", "params": [{ "label": "n As Integer" }, { "label": "preserveLocalTime As Boolean" }] },
+    "AdjustHour": { "signature": "AdjustHour(n As Integer)", "params": [{ "label": "n As Integer" }] },
+    "AdjustMinute": { "signature": "AdjustMinute(n As Integer)", "params": [{ "label": "n As Integer" }] },
+    "AdjustSecond": { "signature": "AdjustSecond(n As Integer)", "params": [{ "label": "n As Integer" }] },
+    "AdjustMonth": { "signature": "AdjustMonth(n As Integer)", "params": [{ "label": "n As Integer" }] },
+    "AdjustYear": { "signature": "AdjustYear(n As Integer)", "params": [{ "label": "n As Integer" }] },
+    "ConvertToZone": {
+      "signature": "ConvertToZone(zone As Integer, isDST As Boolean)",
+      "params": [
+        { "label": "zone As Integer", "doc": "Hours from GMT." },
+        { "label": "isDST As Boolean" }
+      ]
+    },
+    "TimeDifference": {
+      "signature": "TimeDifference(other As NotesDateTime) As Long",
+      "params": [{ "label": "other As NotesDateTime" }],
+      "returns": "Long (seconds)"
+    },
+    "SetNow": { "signature": "SetNow()", "params": [] }
+  },
+
+  "NotesStream": {
+    "Open": {
+      "signature": "Open(file As String, [charSet As String]) As Boolean",
+      "params": [
+        { "label": "file As String" },
+        { "label": "charSet As String", "doc": "e.g. \"UTF-8\". Omit for binary." }
+      ],
+      "returns": "Boolean"
+    },
+    "Close": { "signature": "Close()", "params": [] },
+    "Read": { "signature": "Read([maxBytes As Long]) As Variant", "params": [{ "label": "maxBytes As Long" }], "returns": "Variant (Byte array)" },
+    "ReadText": { "signature": "ReadText([eolKind As Integer], [maxLen As Long]) As String", "params": [{ "label": "eolKind As Integer", "doc": "EOL_ANY (0), EOL_PLATFORM (1) \u2026" }, { "label": "maxLen As Long" }], "returns": "String" },
+    "Write": { "signature": "Write(bytes As Variant) As Long", "params": [{ "label": "bytes As Variant" }], "returns": "Long" },
+    "WriteText": { "signature": "WriteText(text As String, [eolKind As Integer]) As Long", "params": [{ "label": "text As String" }, { "label": "eolKind As Integer" }], "returns": "Long" },
+    "Truncate": { "signature": "Truncate()", "params": [] }
+  },
+
+  "NotesACL": {
+    "CreateACLEntry": {
+      "signature": "CreateACLEntry(name As String, level As Integer) As NotesACLEntry",
+      "params": [
+        { "label": "name As String" },
+        { "label": "level As Integer", "doc": "ACLLEVEL_NOACCESS (0) \u2026 ACLLEVEL_MANAGER (6)." }
+      ],
+      "returns": "NotesACLEntry"
+    },
+    "GetEntry": {
+      "signature": "GetEntry(name As String) As NotesACLEntry",
+      "params": [{ "label": "name As String" }],
+      "returns": "NotesACLEntry"
+    },
+    "RemoveACLEntry": {
+      "signature": "RemoveACLEntry(name As String)",
+      "params": [{ "label": "name As String" }]
+    }
+  },
+
+  "NotesDXLExporter": {
+    "Export": {
+      "signature": "Export(source As Variant, [output As Variant]) As String",
+      "params": [
+        { "label": "source As Variant", "doc": "NotesDocument, NotesDocumentCollection, NotesDatabase, or NotesNoteCollection." },
+        { "label": "output As Variant", "doc": "Optional file path or NotesStream. Omit to receive DXL as return value." }
+      ],
+      "returns": "String"
+    },
+    "SetInput": { "signature": "SetInput(source As Variant)", "params": [{ "label": "source As Variant" }] },
+    "SetOutput": { "signature": "SetOutput(target As Variant)", "params": [{ "label": "target As Variant" }] }
+  },
+
+  "NotesDXLImporter": {
+    "Import": {
+      "signature": "Import(dxl As Variant, db As NotesDatabase)",
+      "params": [
+        { "label": "dxl As Variant", "doc": "DXL string, file path, or NotesStream." },
+        { "label": "db As NotesDatabase" }
+      ]
+    },
+    "SetInput": { "signature": "SetInput(source As Variant)", "params": [{ "label": "source As Variant" }] }
+  },
+
+  "NotesUIWorkspace": {
+    "EditDocument": {
+      "signature": "EditDocument(editMode As Boolean, [doc As NotesDocument], [readOnly As Boolean], [windowTitle As String]) As NotesUIDocument",
+      "params": [
+        { "label": "editMode As Boolean" },
+        { "label": "doc As NotesDocument" },
+        { "label": "readOnly As Boolean" },
+        { "label": "windowTitle As String" }
+      ],
+      "returns": "NotesUIDocument"
+    },
+    "ComposeDocument": {
+      "signature": "ComposeDocument([server As String], [dbFile As String], [form As String]) As NotesUIDocument",
+      "params": [
+        { "label": "server As String" },
+        { "label": "dbFile As String" },
+        { "label": "form As String" }
+      ],
+      "returns": "NotesUIDocument"
+    },
+    "DialogBox": {
+      "signature": "DialogBox(formName As String, [autoHorzFit As Boolean], [autoVertFit As Boolean], [noCancel As Boolean], [noNewFields As Boolean], [noFieldUpdate As Boolean], [readOnly As Boolean], [title As String], [target As NotesDocument]) As Boolean",
+      "params": [
+        { "label": "formName As String" },
+        { "label": "autoHorzFit As Boolean" },
+        { "label": "autoVertFit As Boolean" },
+        { "label": "noCancel As Boolean" },
+        { "label": "noNewFields As Boolean" },
+        { "label": "noFieldUpdate As Boolean" },
+        { "label": "readOnly As Boolean" },
+        { "label": "title As String" },
+        { "label": "target As NotesDocument" }
+      ],
+      "returns": "Boolean"
+    },
+    "PickListStrings": {
+      "signature": "PickListStrings(type As Integer, [multipleSelection As Boolean], [server As String], [dbFile As String], [view As String], [title As String], [prompt As String], [column As Integer]) As Variant",
+      "params": [
+        { "label": "type As Integer", "doc": "PICKLIST_NAMES, _ROOMS, _RESOURCES, _CUSTOM, _HELP." },
+        { "label": "multipleSelection As Boolean" },
+        { "label": "server As String" },
+        { "label": "dbFile As String" },
+        { "label": "view As String" },
+        { "label": "title As String" },
+        { "label": "prompt As String" },
+        { "label": "column As Integer" }
+      ],
+      "returns": "Variant array"
+    },
+    "OpenDatabase": {
+      "signature": "OpenDatabase([server As String], [dbFile As String], [view As String], [key As String], [newInstance As Boolean], [tempInstance As Boolean])",
+      "params": [
+        { "label": "server As String" },
+        { "label": "dbFile As String" },
+        { "label": "view As String" },
+        { "label": "key As String" },
+        { "label": "newInstance As Boolean" },
+        { "label": "tempInstance As Boolean" }
+      ]
+    },
+    "Prompt": {
+      "signature": "Prompt(type As Integer, title As String, prompt As String, [default As Variant], [values As Variant]) As Variant",
+      "params": [
+        { "label": "type As Integer", "doc": "PROMPT_OK, _OKCANCELEDIT, _OKCANCELLIST, _OKCANCELCOMBO, _YESNO, _YESNOCANCEL, _OKCANCELLISTMULT, _PASSWORD." },
+        { "label": "title As String" },
+        { "label": "prompt As String" },
+        { "label": "default As Variant" },
+        { "label": "values As Variant" }
+      ],
+      "returns": "Variant"
+    },
+    "URLOpen": {
+      "signature": "URLOpen(url As String, [charset As String], [user As String], [password As String], [reload As Boolean], [reloadIfModified As Boolean], [waitForResponse As Boolean]) As Variant",
+      "params": [
+        { "label": "url As String" },
+        { "label": "charset As String" },
+        { "label": "user As String" },
+        { "label": "password As String" },
+        { "label": "reload As Boolean" },
+        { "label": "reloadIfModified As Boolean" },
+        { "label": "waitForResponse As Boolean" }
+      ],
+      "returns": "Variant"
+    }
+  },
+
+  "NotesUIDocument": {
+    "FieldGetText": {
+      "signature": "FieldGetText(fieldName As String) As String",
+      "params": [{ "label": "fieldName As String" }],
+      "returns": "String"
+    },
+    "FieldSetText": {
+      "signature": "FieldSetText(fieldName As String, value As String)",
+      "params": [
+        { "label": "fieldName As String" },
+        { "label": "value As String" }
+      ]
+    },
+    "FieldClear": { "signature": "FieldClear(fieldName As String)", "params": [{ "label": "fieldName As String" }] },
+    "GotoField": { "signature": "GotoField(fieldName As String)", "params": [{ "label": "fieldName As String" }] },
+    "Save": { "signature": "Save() As Boolean", "params": [], "returns": "Boolean" },
+    "Close": { "signature": "Close([noDiscardChanges As Boolean])", "params": [{ "label": "noDiscardChanges As Boolean" }] },
+    "Refresh": { "signature": "Refresh()", "params": [] },
+    "Reload": { "signature": "Reload()", "params": [] }
+  },
+
+  "NotesLog": {
+    "OpenAgentLog": { "signature": "OpenAgentLog()", "params": [] },
+    "OpenFileLog": { "signature": "OpenFileLog(file As String)", "params": [{ "label": "file As String" }] },
+    "OpenMailLog": {
+      "signature": "OpenMailLog(recipients As Variant, subject As String)",
+      "params": [
+        { "label": "recipients As Variant" },
+        { "label": "subject As String" }
+      ]
+    },
+    "OpenNotesLog": {
+      "signature": "OpenNotesLog(server As String, dbFile As String)",
+      "params": [
+        { "label": "server As String" },
+        { "label": "dbFile As String" }
+      ]
+    },
+    "LogAction": { "signature": "LogAction(action As String)", "params": [{ "label": "action As String" }] },
+    "LogError": {
+      "signature": "LogError(code As Integer, description As String)",
+      "params": [
+        { "label": "code As Integer" },
+        { "label": "description As String" }
+      ]
+    },
+    "Close": { "signature": "Close()", "params": [] }
+  },
+
+  "NotesRichTextItem": {
+    "AppendText": { "signature": "AppendText(text As String)", "params": [{ "label": "text As String" }] },
+    "AppendStyle": { "signature": "AppendStyle(style As NotesRichTextStyle)", "params": [{ "label": "style As NotesRichTextStyle" }] },
+    "AppendDocLink": {
+      "signature": "AppendDocLink(target As Variant, [comment As String], [hotspot As String])",
+      "params": [
+        { "label": "target As Variant", "doc": "NotesDocument, NotesView, or NotesDatabase." },
+        { "label": "comment As String" },
+        { "label": "hotspot As String" }
+      ]
+    },
+    "EmbedObject": {
+      "signature": "EmbedObject(type As Integer, className As String, source As String, [name As String]) As NotesEmbeddedObject",
+      "params": [
+        { "label": "type As Integer", "doc": "EMBED_ATTACHMENT (1454), EMBED_OBJECT (1453), EMBED_OBJECTLINK (1452)." },
+        { "label": "className As String" },
+        { "label": "source As String", "doc": "File path for attachments." },
+        { "label": "name As String" }
+      ],
+      "returns": "NotesEmbeddedObject"
+    },
+    "AddNewLine": { "signature": "AddNewLine([count As Integer = 1], [forceParagraph As Boolean])", "params": [{ "label": "count As Integer" }, { "label": "forceParagraph As Boolean" }] }
+  }
+}

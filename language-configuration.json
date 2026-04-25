@@ -1,6 +1,7 @@
 {
   "comments": {
-    "lineComment": "'"
+    "lineComment": "'",
+    "blockComment": ["%REM", "%END REM"]
   },
   "brackets": [
     ["(", ")"],
@@ -21,5 +22,73 @@
       "start": "^\\s*'(\\s*)#?region\\b",
       "end": "^\\s*'(\\s*)#?endregion\\b"
     }
-  }
+  },
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([A-Za-z_][\\w$]*)",
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(?:(?:Public|Private|Friend|Static)\\s+)?(?:Sub\\b|Function\\b|Property\\s+(?:Get|Set|Let)\\b|Class\\b|If\\b.*\\bThen\\s*$|For\\b|For\\s+Each\\b|ForAll\\b|Do\\b|While\\b|With\\b|Select\\s+Case\\b|Type\\b|Enum\\b|Else\\b|ElseIf\\b.*\\bThen\\s*$|Case\\b)",
+    "decreaseIndentPattern": "^\\s*(?:End\\s+(?:Sub|Function|Property|Class|If|With|Select|Type|Enum)\\b|Next\\b|Loop\\b|Wend\\b|End\\s+ForAll\\b|Else\\b|ElseIf\\b|Case\\b)"
+  },
+  "onEnterRules": [
+    {
+      "beforeText": "^\\s*(?:Public|Private|Friend|Static)?\\s*Sub\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*(?:Public|Private|Friend|Static)?\\s*Function\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*(?:Public|Private)?\\s*Property\\s+(?:Get|Set|Let)\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*Class\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*If\\b.*\\bThen\\s*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*ElseIf\\b.*\\bThen\\s*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*Else\\s*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*For\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*ForAll\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*Do\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*While\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*With\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*Select\\s+Case\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*Case\\b.*$",
+      "action": { "indent": "indent" }
+    },
+    {
+      "beforeText": "^\\s*%REM\\b\\s*$",
+      "afterText": "^\\s*%END\\s+REM\\b\\s*$",
+      "action": { "indent": "indentOutdent" }
+    }
+  ]
 }

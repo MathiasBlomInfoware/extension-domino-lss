@@ -1,0 +1,131 @@
+{
+  "ACL levels": {
+    "ACLLEVEL_NOACCESS": { "value": 0, "summary": "No access (deny)." },
+    "ACLLEVEL_DEPOSITOR": { "value": 1, "summary": "Depositor: can create documents but not read them." },
+    "ACLLEVEL_READER": { "value": 2, "summary": "Reader: can read documents." },
+    "ACLLEVEL_AUTHOR": { "value": 3, "summary": "Author: can edit documents they created (Authors items apply)." },
+    "ACLLEVEL_EDITOR": { "value": 4, "summary": "Editor: can edit any document." },
+    "ACLLEVEL_DESIGNER": { "value": 5, "summary": "Designer: can change design of the database." },
+    "ACLLEVEL_MANAGER": { "value": 6, "summary": "Manager: full access including ACL." }
+  },
+  "ACL entry user types": {
+    "ACLTYPE_UNSPECIFIED": { "value": 0 },
+    "ACLTYPE_PERSON": { "value": 1 },
+    "ACLTYPE_SERVER": { "value": 2 },
+    "ACLTYPE_MIXED_GROUP": { "value": 3 },
+    "ACLTYPE_PERSON_GROUP": { "value": 4 },
+    "ACLTYPE_SERVER_GROUP": { "value": 5 }
+  },
+  "Database types": {
+    "DBTYPE_ADDR_BOOK": { "value": 14, "summary": "Domino Directory / Personal Address Book." },
+    "DBTYPE_ARCHIVE": { "value": 13 },
+    "DBTYPE_DESIGN_TEMPLATE": { "value": 0, "summary": "Design template (.ntf)." },
+    "DBTYPE_DOC_LIBRARY": { "value": 4 },
+    "DBTYPE_LIBRARY": { "value": 12 },
+    "DBTYPE_MAILBOX": { "value": 10 },
+    "DBTYPE_MAIL_FILE": { "value": 5 },
+    "DBTYPE_MULTIDB_SRCH": { "value": 8 },
+    "DBTYPE_PORTFOLIO": { "value": 11 },
+    "DBTYPE_STANDARD": { "value": 1 },
+    "DBTYPE_SUBSCRIPTIONS": { "value": 9 }
+  },
+  "Database directory iterators": {
+    "DATABASE": { "value": 1247, "summary": "All NSF databases." },
+    "TEMPLATE": { "value": 1248, "summary": "All NTF templates." },
+    "REPLICA_CANDIDATE": { "value": 1245 },
+    "TEMPLATE_CANDIDATE": { "value": 1246 }
+  },
+  "Embedded object types": {
+    "EMBED_ATTACHMENT": { "value": 1454, "summary": "File attachment in rich text." },
+    "EMBED_OBJECT": { "value": 1453, "summary": "Embedded OLE object." },
+    "EMBED_OBJECTLINK": { "value": 1452, "summary": "Linked OLE object." }
+  },
+  "Picklist": {
+    "PICKLIST_NAMES": { "value": 1071 },
+    "PICKLIST_ROOMS": { "value": 1072 },
+    "PICKLIST_RESOURCES": { "value": 1073 },
+    "PICKLIST_HELP": { "value": 1075 },
+    "PICKLIST_CUSTOM": { "value": 1074 }
+  },
+  "Prompt types": {
+    "PROMPT_OK": { "value": 1, "summary": "Single-button OK." },
+    "PROMPT_OKCANCELEDIT": { "value": 3 },
+    "PROMPT_OKCANCELLIST": { "value": 4 },
+    "PROMPT_OKCANCELCOMBO": { "value": 5 },
+    "PROMPT_OKCANCELEDITCOMBO": { "value": 7 },
+    "PROMPT_OKCANCELLISTMULT": { "value": 6 },
+    "PROMPT_PASSWORD": { "value": 8 },
+    "PROMPT_YESNO": { "value": 32 },
+    "PROMPT_YESNOCANCEL": { "value": 33 }
+  },
+  "Item types": {
+    "AUTHORS": { "value": 1076 },
+    "DATETIMES": { "value": 1024 },
+    "ERRORITEM": { "value": 256 },
+    "FORMULA": { "value": 1536 },
+    "HTML": { "value": 21 },
+    "ICON": { "value": 6 },
+    "MIME_PART": { "value": 25 },
+    "NAMES": { "value": 1074 },
+    "NOTELINKS": { "value": 7 },
+    "NOTEREFS": { "value": 4 },
+    "NUMBERS": { "value": 768 },
+    "OTHEROBJECT": { "value": 1085 },
+    "QUERYCD": { "value": 11 },
+    "READERS": { "value": 1075 },
+    "RFC822TEXT": { "value": 1282 },
+    "RICHTEXT": { "value": 1 },
+    "SIGNATURE": { "value": 8 },
+    "TEXT": { "value": 1280 },
+    "UNAVAILABLE": { "value": 512 },
+    "UNKNOWN": { "value": 0 },
+    "USERDATA": { "value": 14 },
+    "USERID": { "value": 1792 }
+  },
+  "Full-text search options": {
+    "FT_SCORES": { "value": 8, "summary": "Sort by relevance score." },
+    "FT_DATE_DES": { "value": 1, "summary": "Sort newest first." },
+    "FT_DATE_ASC": { "value": 2, "summary": "Sort oldest first." },
+    "FT_DATABASE": { "value": 1, "summary": "Search target: this database." },
+    "FT_FILESYSTEM": { "value": 2, "summary": "Search target: filesystem index." },
+    "FT_FUZZY": { "value": 16384 },
+    "FT_STEMS": { "value": 512 },
+    "FT_THESAURUS": { "value": 4 }
+  },
+  "View navigator buffer flags": {
+    "VC_FROM_CATEGORY_FUNC": { "value": 1 },
+    "VC_FROM_INDEX_POSITION": { "value": 2 },
+    "VC_INDEX_NAVIGATE_NEXT": { "value": 1 }
+  },
+  "Mail send options": {
+    "ATTACH": { "value": 1 },
+    "EMBED_ATTACH_DATABASE": { "value": 1454 }
+  },
+  "Misc constants": {
+    "TRUE": { "value": -1, "summary": "LotusScript True (= -1)." },
+    "FALSE": { "value": 0, "summary": "LotusScript False." },
+    "NOTHING": { "value": "Nothing", "summary": "Null reference for object variables." },
+    "PI": { "value": 3.141592653589793 },
+    "EOL": { "value": "Chr$(13) & Chr$(10)", "summary": "Carriage return + line feed (Domino-style)." }
+  },
+  "DXL exporter options": {
+    "DXLRICHTEXTOPTION_DXL": { "value": 0, "summary": "Emit rich text as native DXL elements." },
+    "DXLRICHTEXTOPTION_RAW": { "value": 1, "summary": "Emit rich text as base64-encoded CD records." }
+  },
+  "DXL importer options": {
+    "DXLIMPORTOPTION_IGNORE": { "value": 1, "summary": "Skip notes that already exist." },
+    "DXLIMPORTOPTION_CREATE": { "value": 2, "summary": "Always create new notes." },
+    "DXLIMPORTOPTION_REPLACE_ELSE_IGNORE": { "value": 4 },
+    "DXLIMPORTOPTION_REPLACE_ELSE_CREATE": { "value": 5 },
+    "DXLIMPORTOPTION_UPDATE_ELSE_IGNORE": { "value": 6 },
+    "DXLIMPORTOPTION_UPDATE_ELSE_CREATE": { "value": 7 }
+  },
+  "Stream EOL kinds": {
+    "EOL_ANY": { "value": 0 },
+    "EOL_PLATFORM": { "value": 1 },
+    "EOL_CR": { "value": 2 },
+    "EOL_LF": { "value": 3 },
+    "EOL_CRLF": { "value": 4 },
+    "EOL_LFCR": { "value": 5 }
+  }
+}

@@ -3,6 +3,7 @@ const vscode = require("vscode");
 const { hoverMarkdownForWord, effectiveHelpVersion } = require("./hcl-docs.js");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
 const { tryNotesMemberHover } = require("./notes-member-completion.js");
+const { constantHoverMarkdown } = require("./notes-constants.js");
 
 /**
  * @param {string} ch
@@ -225,6 +226,11 @@ function registerHclHover(context) {
         );
         if (memberMd) {
           return new vscode.Hover(memberMd, wordRange);
+        }
+
+        const constMd = constantHoverMarkdown(word);
+        if (constMd) {
+          return new vscode.Hover(constMd, wordRange);
         }
 
         const md = hoverMarkdownForWord(word, version);

@@ -2,7 +2,7 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "infoware",
   "license": "MIT",
   "homepage": "https://github.com/MathiasBlomInfoware/extension-domino-lss#readme",
@@ -66,6 +66,26 @@
           "type": "boolean",
           "default": true,
           "description": "After obj., show only curated HCL-style Notes members when obj is Dim … As Notes* (or Sub/Function param). Otherwise show an empty list. Turn off to fall back to general suggestions after unknown objects."
+        },
+        "domino-lss-lotusscript.warnMissingOptionDeclare": {
+          "type": "boolean",
+          "default": true,
+          "description": "Hint when a .lss file has no 'Option Declare', which makes implicit Variant declarations possible."
+        },
+        "domino-lss-lotusscript.highlightTodos": {
+          "type": "boolean",
+          "default": true,
+          "description": "Surface TODO / FIXME / XXX / HACK / BUG markers from comments in Problems."
+        },
+        "domino-lss-lotusscript.checkStructuralBlocks": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn about unclosed or mismatched Sub/Function/Property/Class/If/For/Do/While/With/Select Case blocks."
+        },
+        "domino-lss-lotusscript.enableCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'Open <NotesClass> in HCL help' code lenses above declarations."
         }
       }
     },

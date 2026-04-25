@@ -14,6 +14,7 @@ const {
 } = require("./hcl-docs.js");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
 const { tryNotesMemberCompletion } = require("./notes-member-completion.js");
+const { constantCompletionItems } = require("./notes-constants.js");
 
 /**
  * @param {vscode.ExtensionContext} context
@@ -96,6 +97,10 @@ function registerHclCompletions(context) {
       "LotusScript/COM/OLE classes (overview)"
     );
     items.push(comOleItem);
+
+    for (const c of constantCompletionItems()) {
+      items.push(c);
+    }
 
     cache = items;
     cacheVersion = version;
