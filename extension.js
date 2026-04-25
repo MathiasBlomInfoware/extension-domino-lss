@@ -4,9 +4,11 @@ const { effectiveHelpVersion } = require("./hcl-docs.js");
 const { registerHclCompletions } = require("./completion.js");
 const { registerHclHover } = require("./hover.js");
 const { isLssDocument } = require("./document-selectors.js");
+const { dropNotesVarTypeMapForUri } = require("./notes-member-completion.js");
 
 const NON_ASCII = /[^\x00-\x7F]/;
 const DIAG_SOURCE = "domino-lss-lotusscript";
+const DIAG_DEBOUNCE_MS = 200;
 
 /** @param {string} line */
 function isPercentRemStart(line) {
@@ -103,21 +105,21 @@ function scanDocument(doc, collection) {
 
 /**
  * One-time: persist cleaned `helpVersion` (pasted URLs → segment; below-minimum semver → floor).
+ * Covers Global, Workspace and every WorkspaceFolder scope.
  * @param {vscode.ExtensionContext} context
  */
 async function migrateHelpVersionCanonical(context) {
-  const key = "dominoLssMigratedHelpVersionCanonical2026b";
+  const key = "dominoLssMigratedHelpVersionCanonical2026c";
   if (context.globalState.get(key)) {
     return;
   }
-  const conf = vscode.workspace.getConfiguration("domino-lss-lotusscript");
-  const ins = conf.inspect("helpVersion");
   try {
     /**
+     * @param {vscode.WorkspaceConfiguration} conf
      * @param {import("vscode").ConfigurationTarget} target
      * @param {unknown} val
      */
-    const tryUpdate = async (target, val) => {
+    const tryUpdate = async (conf, target, val) => {
       if (val === undefined || val === null) {
         return;
       }
@@ -130,8 +132,17 @@ async function migrateHelpVersionCanonical(context) {
         await conf.update("helpVersion", next, target);
       }
     };
-    await tryUpdate(vscode.ConfigurationTarget.Global, ins?.globalValue);
-    await tryUpdate(vscode.ConfigurationTarget.Workspace, ins?.workspaceValue);
+
+    const root = vscode.workspace.getConfiguration("domino-lss-lotusscript");
+    const rootIns = root.inspect("helpVersion");
+    await tryUpdate(root, vscode.ConfigurationTarget.Global, rootIns?.globalValue);
+    await tryUpdate(root, vscode.ConfigurationTarget.Workspace, rootIns?.workspaceValue);
+
+    for (const folder of vscode.workspace.workspaceFolders ?? []) {
+      const conf = vscode.workspace.getConfiguration("domino-lss-lotusscript", folder.uri);
+      const ins = conf.inspect("helpVersion");
+      await tryUpdate(conf, vscode.ConfigurationTarget.WorkspaceFolder, ins?.workspaceFolderValue);
+    }
   } catch {
     // ignore if settings are read-only
   }
@@ -167,6 +178,28 @@ exports.activate = function (context) {
     }
   };
 
+  /** @type {Map<string, NodeJS.Timeout>} */
+  const debounceTimers = new Map();
+  const scheduleRun = (/** @type {vscode.TextDocument} */ doc) => {
+    if (!isLssDocument(doc)) {
+      return;
+    }
+    const key = doc.uri.toString();
+    const prev = debounceTimers.get(key);
+    if (prev) {
+      clearTimeout(prev);
+    }
+    debounceTimers.set(
+      key,
+      setTimeout(() => {
+        debounceTimers.delete(key);
+        if (!doc.isClosed) {
+          scanDocument(doc, collection);
+        }
+      }, DIAG_DEBOUNCE_MS)
+    );
+  };
+
   for (const doc of vscode.workspace.textDocuments) {
     run(doc);
   }
@@ -174,9 +207,19 @@ exports.activate = function (context) {
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(run),
     vscode.workspace.onDidSaveTextDocument(run),
+    vscode.workspace.onDidChangeTextDocument((e) => {
+      scheduleRun(e.document);
+    }),
     vscode.workspace.onDidCloseTextDocument((doc) => {
       if (isLssDocument(doc)) {
         collection.delete(doc.uri);
+        dropNotesVarTypeMapForUri(doc.uri);
+        const key = doc.uri.toString();
+        const t = debounceTimers.get(key);
+        if (t) {
+          clearTimeout(t);
+          debounceTimers.delete(key);
+        }
       }
     }),
     vscode.workspace.onDidChangeConfiguration((e) => {
@@ -185,7 +228,15 @@ exports.activate = function (context) {
           run(doc);
         }
       }
-    })
+    }),
+    {
+      dispose() {
+        for (const t of debounceTimers.values()) {
+          clearTimeout(t);
+        }
+        debounceTimers.clear();
+      },
+    }
   );
 };
 

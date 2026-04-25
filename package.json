@@ -2,13 +2,24 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "publisher": "infoware",
+  "license": "MIT",
+  "homepage": "https://github.com/MathiasBlomInfoware/extension-domino-lss#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MathiasBlomInfoware/extension-domino-lss.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MathiasBlomInfoware/extension-domino-lss/issues"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Snippets",
+    "Linters"
   ],
   "keywords": [
     "lotusscript",
@@ -98,7 +109,7 @@
         "args": {
           "snippet": "%REM\n\tSub ${1:temp}\n\tDescription: ${2:Comments for Sub}\n%END REM\nSub ${1:temp}\n\n\t$0\nEnd Sub"
         },
-        "key": "ctrl+shift+r",
+        "key": "ctrl+k ctrl+r",
         "when": "editorTextFocus && editorLangId == lotusscript && !editorReadonly"
       },
       {
@@ -106,7 +117,7 @@
         "args": {
           "snippet": "%REM\n\tFunction ${1:temp}\n\tDescription: ${2:Comments for Function}\n%END REM\nFunction ${1:temp}() As ${3:Variant}\n\n\t$0\nEnd Function"
         },
-        "key": "ctrl+shift+y",
+        "key": "ctrl+k ctrl+y",
         "when": "editorTextFocus && editorLangId == lotusscript && !editorReadonly"
       }
     ]

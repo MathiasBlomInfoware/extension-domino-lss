@@ -173,13 +173,12 @@ function registerHclHover(context) {
       const version = effectiveHelpVersion(conf.get("helpVersion"));
 
       const lineText = document.lineAt(position.line).text;
-      const fullText = document.getText();
 
       const dot = parseNotesDotMember(lineText, position.character);
       if (dot) {
         try {
           const memberMd = tryNotesMemberHover(
-            fullText,
+            document,
             lineText,
             dot.member,
             dot.memberStart,
@@ -218,7 +217,7 @@ function registerHclHover(context) {
 
       try {
         const memberMd = tryNotesMemberHover(
-          fullText,
+          document,
           lineText,
           word,
           wordStartCol,
