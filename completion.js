@@ -5,10 +5,12 @@ const {
   NOTES_CLASSES,
   CHAPTER7,
   CLASSES_AZ,
+  DESIGNER_PUBLICATION,
   basicBase,
   builtinDocFile,
   notesClassDocFile,
   markdownDoc,
+  markdownDesignerPublicationDoc,
   normalizeHelpVersion,
 } = require("./hcl-docs.js");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
@@ -61,6 +63,33 @@ function registerHclCompletions(context) {
     classesItem.detail = "Open Notes class library index";
     classesItem.documentation = markdownDoc(version, CLASSES_AZ, "LotusScript Notes classes A–Z");
     items.push(classesItem);
+
+    const portalItem = new vscode.CompletionItem("HCL Designer help portal", vscode.CompletionItemKind.Reference);
+    portalItem.detail = "Domino Designer 14.5.x documentation home (HCL)";
+    portalItem.documentation = markdownDesignerPublicationDoc(
+      version,
+      DESIGNER_PUBLICATION.index,
+      "HCL Domino Designer documentation (index)"
+    );
+    items.push(portalItem);
+
+    const paneItem = new vscode.CompletionItem("HCL LotusScript Programmer's pane", vscode.CompletionItemKind.Reference);
+    paneItem.detail = "Writing LotusScript in the Programmer's pane";
+    paneItem.documentation = markdownDesignerPublicationDoc(
+      version,
+      DESIGNER_PUBLICATION.lotusScriptProgrammersPane,
+      "Writing LotusScript in the Programmer's pane"
+    );
+    items.push(paneItem);
+
+    const comOleItem = new vscode.CompletionItem("HCL LotusScript COM OLE classes", vscode.CompletionItemKind.Reference);
+    comOleItem.detail = "LotusScript/COM/OLE classes section overview";
+    comOleItem.documentation = markdownDesignerPublicationDoc(
+      version,
+      DESIGNER_PUBLICATION.lotusScriptComOleSection,
+      "LotusScript/COM/OLE classes (overview)"
+    );
+    items.push(comOleItem);
 
     cache = items;
     cacheVersion = version;

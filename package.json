@@ -2,7 +2,7 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "infoware",
   "engines": {
     "vscode": "^1.85.0"

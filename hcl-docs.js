@@ -139,6 +139,21 @@ const BUILTIN_DOC_OVERRIDES = {
 const CHAPTER7 = "LSAZ_CHAPTER_7_STATEMENTS_BUILTIN_FUNCTIONS_SUBS_DATA_TYPES_AND_DIRECTIVES.html";
 const CLASSES_AZ = "H_4_LOTUSSCRIPT_NOTES_CLASSES_REFERENCE.html";
 
+/**
+ * Paths under `https://help.hcl-software.com/dom_designer/{version}/…` (from 14.5.1 portal; verify after upgrades).
+ * Use with {@link markdownDesignerPublicationDoc}.
+ */
+const DESIGNER_PUBLICATION = {
+  index: "index.html",
+  userGuide: "basic/domino_designer_basic_user_guide_and_reference.html",
+  programmingOverview: "basic/H_PROGRAMMING_OVERVIEW_AND_USER_INTERFACE_CHAP.html",
+  lotusScriptUiIntro: "basic/H_2_LOTUSSCRIPT_UNDERSTANDING_THE_PROGRAMMING_ENVIRONMENT.html",
+  lotusScriptProgrammersPane: "basic/H_WRITING_LOTUSSCRIPT_IN_THE_PROGRAMMER_S_PANE.html",
+  lotusScriptComOleSection: "basic/H_LOTUSSCRIPT_NOTES_CLASSES.html",
+  /** Server-side XPages JS reference (not LotusScript). */
+  xpagesJsReferenceIntro: "reference/r_wpdr_intro_c.html",
+};
+
 /** Short hover copy (English). Keys are lowercase; use for Msgbox/Messagebox via lookup. */
 /** @type {Record<string, string>} */
 const BUILTIN_HOVER = {
@@ -518,6 +533,32 @@ function notesClassTopicUrl(version, className) {
 }
 
 /**
+ * Any topic under `dom_designer/{version}/` (e.g. `index.html`, `basic/…`, `reference/…`).
+ * @param {unknown} version
+ * @param {string} pathUnderVersion no leading slash
+ */
+function designerPublicationUrl(version, pathUnderVersion) {
+  const v = normalizeHelpVersion(version);
+  const tail = String(pathUnderVersion).replace(/^\/+/, "");
+  return rewriteDesigner1450To151(`https://help.hcl-software.com/dom_designer/${v}/${tail}`);
+}
+
+/**
+ * Like {@link markdownDoc} but for URLs outside the `basic/` root only (use `basic/…` in `pathUnderVersion`).
+ * @param {unknown} version
+ * @param {string} pathUnderVersion e.g. {@link DESIGNER_PUBLICATION.index}
+ * @param {string} title
+ */
+function markdownDesignerPublicationDoc(version, pathUnderVersion, title) {
+  const url = designerPublicationUrl(version, pathUnderVersion);
+  const md = new vscode.MarkdownString(
+    `**HCL Domino Designer help**\n\n${designerHelpMarkdownLink(title, url)}\n\n*(Opens in your browser.)*`
+  );
+  md.isTrusted = true;
+  return md;
+}
+
+/**
  * @param {string} version
  * @param {string} file
  * @param {string} title
@@ -609,6 +650,9 @@ module.exports = {
   NOTES_CLASSES,
   CHAPTER7,
   CLASSES_AZ,
+  DESIGNER_PUBLICATION,
+  designerPublicationUrl,
+  markdownDesignerPublicationDoc,
   basicBase,
   builtinDocFile,
   notesClassDocFile,
