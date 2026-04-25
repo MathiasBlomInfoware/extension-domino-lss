@@ -233,7 +233,7 @@ const BUILTIN_HOVER = {
 /** @type {Record<string, string>} */
 const NOTES_HOVER = {
   notessession:
-    "Root **Notes runtime** context: current user, environment, and factories for many Domino objects (`New NotesSession`, etc.).",
+    "Root **Notes runtime** context: current user, environment, and factories for many Domino objects (constructor pattern: New NotesSession).",
   notesdatabase:
     "A **.nsf** database open in your script: documents, views, ACL, replication, and full-text search entry points.",
   notesdocument:
@@ -335,21 +335,77 @@ function mdLink(text, url) {
   return `[${safe}](${url})`;
 }
 
+const DESIGNER_HELP_PREFIX = "https://help.hcl-software.com/";
+const OPEN_DESIGNER_HELP_CMD = "domino-lss-lotusscript.openDesignerHelp";
+
+/**
+ * Prefer a command: link so the full URL (path + ?hl=) reaches the browser; plain https links in hovers
+ * have been observed to open only the site root / index.
+ * @param {string} text
+ * @param {string} url
+ */
+function designerHelpMarkdownLink(text, url) {
+  const u = rewriteDesigner1450To151(String(url));
+  const safe = text.replace(/[\[\]()]/g, " ").replace(/\s+/g, " ").trim();
+  if (!u.startsWith(DESIGNER_HELP_PREFIX)) {
+    return `[${safe}](${u})`;
+  }
+  const payload = encodeURIComponent(JSON.stringify([u]));
+  return `[${safe}](command:${OPEN_DESIGNER_HELP_CMD}?${payload})`;
+}
+
+/**
+ * Effective help tree version for HCL URLs and hovers. Older installs may still
+ * have `14.5.0` stored from the previous extension default.
+ * @param {unknown} raw from `getConfiguration(...).get("helpVersion")` or any caller
+ * @returns {string}
+ */
+function normalizeHelpVersion(raw) {
+  let s = String(raw ?? "")
+    .replace(/^\uFEFF/, "")
+    .replace(/[\u200b-\u200d\ufeff]/g, "")
+    .trim();
+  s = s.replace(/[\u00a0\u2007\u202f]/g, " ").trim();
+  s = s.replace(/\s+/g, " ").trim();
+  // Strip bidi / format chars that break exact match on "14.5.0".
+  s = s.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, "").trim();
+  // Setting sometimes contains a full help URL; only the X.Y.Z segment is valid here.
+  const domMatch = s.match(/\/dom_designer\/(\d+(?:\.\d+)+)\b/i);
+  if (domMatch) {
+    s = domMatch[1].replace(/,/g, ".").trim();
+  }
+  if (!s) {
+    return "14.5.1";
+  }
+  const core = s.replace(/,/g, ".").toLowerCase();
+  // Map any 14.5.0* patch tree to the live 14.5.1 help (HCL no longer serves 14.5.0 reliably).
+  if (!core || core === "14.5.0" || /^14\.5\.0(\.|$)/.test(core)) {
+    return "14.5.1";
+  }
+  return s;
+}
+
 /**
  * @param {string} version
  * @param {string} file
  * @param {string} linkTitle
  * @param {string} [body]
+ * @param {string} [topicUrlOverride] full URL for Notes class topics (includes ?hl=)
  */
-function hoverMarkdown(version, file, linkTitle, body) {
-  const url = basicBase(version) + file;
+function hoverMarkdown(version, file, linkTitle, body, topicUrlOverride) {
+  const v = normalizeHelpVersion(version);
+  let url =
+    typeof topicUrlOverride === "string" && topicUrlOverride.length > 0
+      ? topicUrlOverride
+      : basicBase(v) + file;
+  url = rewriteDesigner1450To151(url);
   const parts = [];
   if (body && body.trim()) {
     parts.push(body.trim());
     parts.push("---");
   }
-  parts.push(mdLink(linkTitle, url));
-  parts.push(`HCL Domino Designer · help tree **${version}**`);
+  parts.push(designerHelpMarkdownLink(linkTitle, url));
+  parts.push(`HCL Domino Designer · help tree **${v}**`);
   parts.push("_Opens the topic in your browser._");
   const md = new vscode.MarkdownString(parts.join("\n\n"));
   md.isTrusted = true;
@@ -412,10 +468,21 @@ const KEYWORD_DOC = new Set(
 );
 
 /**
- * @param {string} version
+ * HCL sometimes still resolves to 14.5.0 in links; force the live 14.5.1 help tree segment.
+ * @param {string} url
+ */
+function rewriteDesigner1450To151(url) {
+  return String(url)
+    .replace(/\/dom_designer\/14\.5\.0\//gi, "/dom_designer/14.5.1/")
+    .replace(/\/dom_designer\/14\.5\.0(?=[?#]|$)/gi, "/dom_designer/14.5.1");
+}
+
+/**
+ * @param {unknown} version
  */
 function basicBase(version) {
-  return `https://help.hcl-software.com/dom_designer/${version}/basic/`;
+  const v = normalizeHelpVersion(version);
+  return rewriteDesigner1450To151(`https://help.hcl-software.com/dom_designer/${v}/basic/`);
 }
 
 /**
@@ -440,14 +507,28 @@ function notesClassDocFile(className) {
 }
 
 /**
+ * Full HCL URL for a Notes* class topic (Designer uses ?hl= lowercase class name).
+ * @param {unknown} version
+ * @param {string} className e.g. NotesSession
+ */
+function notesClassTopicUrl(version, className) {
+  const file = notesClassDocFile(className);
+  const hl = encodeURIComponent(className.toLowerCase());
+  return `${basicBase(version)}${file}?hl=${hl}`;
+}
+
+/**
  * @param {string} version
  * @param {string} file
  * @param {string} title
+ * @param {string} [notesClassName] when set, use Notes class URL with ?hl=
  */
-function markdownDoc(version, file, title) {
-  const url = basicBase(version) + file;
+function markdownDoc(version, file, title, notesClassName) {
+  const url = rewriteDesigner1450To151(
+    notesClassName ? notesClassTopicUrl(version, notesClassName) : basicBase(version) + file
+  );
   const md = new vscode.MarkdownString(
-    `**HCL Domino Designer help**\n\n[${title}](${url})\n\n*(Opens in your browser.)*`
+    `**HCL Domino Designer help**\n\n${designerHelpMarkdownLink(title, url)}\n\n*(Opens in your browser.)*`
   );
   md.isTrusted = true;
   return md;
@@ -459,6 +540,7 @@ function markdownDoc(version, file, title) {
  * @returns {vscode.MarkdownString | undefined}
  */
 function hoverMarkdownForWord(word, version) {
+  const v = normalizeHelpVersion(version);
   const raw = word.replace(/\$/g, "").trim();
   if (!raw) {
     return undefined;
@@ -475,7 +557,7 @@ function hoverMarkdownForWord(word, version) {
       BUILTIN_HOVER[detailKey] ||
       `LotusScript built-in **${builtinHit}()**. See the HCL topic for full signature, return type, and errors.`;
     return hoverMarkdown(
-      version,
+      v,
       file,
       `Open ${builtinHit} in HCL help`,
       `### ${builtinHit}\n\n${body}`
@@ -490,11 +572,19 @@ function hoverMarkdownForWord(word, version) {
       const body =
         NOTES_HOVER[clsKey] ||
         `Domino **${cls}** class from the Notes back-end or UI library. See the class topic for constructors, properties, and methods.`;
+      // Avoid nested [text](url) inside the body: some VS Code builds render that as an empty hover.
+      const azUrl = basicBase(v) + CLASSES_AZ;
+      const bodyPlus =
+        body +
+        "\n\n**Also see:** " +
+        designerHelpMarkdownLink("Notes classes A-Z", azUrl);
+      const classTopicUrl = notesClassTopicUrl(v, cls);
       return hoverMarkdown(
-        version,
+        v,
         file,
         `Open ${cls} in HCL help`,
-        `### ${cls}\n\n${body}\n\n**Also see:** [Notes classes A–Z](${basicBase(version)}${CLASSES_AZ})`
+        `### ${cls}\n\n${bodyPlus}`,
+        classTopicUrl
       );
     }
   }
@@ -504,7 +594,7 @@ function hoverMarkdownForWord(word, version) {
       KEYWORD_HOVER[lower] ||
       `LotusScript keyword **${raw}**. See the language reference for grammar and related statements.`;
     return hoverMarkdown(
-      version,
+      v,
       CHAPTER7,
       "Open LotusScript language reference in HCL help",
       `### ${raw}\n\n${kwBody}`
@@ -522,6 +612,10 @@ module.exports = {
   basicBase,
   builtinDocFile,
   notesClassDocFile,
+  notesClassTopicUrl,
+  designerHelpMarkdownLink,
   markdownDoc,
   hoverMarkdownForWord,
+  normalizeHelpVersion,
+  rewriteDesigner1450To151,
 };

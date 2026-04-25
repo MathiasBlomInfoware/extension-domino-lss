@@ -1,6 +1,6 @@
 // @ts-check
 const vscode = require("vscode");
-const { hoverMarkdownForWord } = require("./hcl-docs.js");
+const { hoverMarkdownForWord, normalizeHelpVersion } = require("./hcl-docs.js");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
 const { tryNotesMemberHover } = require("./notes-member-completion.js");
 
@@ -171,10 +171,9 @@ function registerHclHover(context) {
         return undefined;
       }
 
-      const version =
-        vscode.workspace
-          .getConfiguration("domino-lss-lotusscript")
-          .get("helpVersion", "14.5.1") + "";
+      const version = normalizeHelpVersion(
+        vscode.workspace.getConfiguration("domino-lss-lotusscript").get("helpVersion")
+      );
 
       const lineText = document.lineAt(position.line).text;
       const fullText = document.getText();

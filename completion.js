@@ -9,6 +9,7 @@ const {
   builtinDocFile,
   notesClassDocFile,
   markdownDoc,
+  normalizeHelpVersion,
 } = require("./hcl-docs.js");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
 const { tryNotesMemberCompletion } = require("./notes-member-completion.js");
@@ -23,10 +24,9 @@ function registerHclCompletions(context) {
   let cacheVersion = "";
 
   const rebuild = () => {
-    const version =
-      vscode.workspace
-        .getConfiguration("domino-lss-lotusscript")
-        .get("helpVersion", "14.5.1") + "";
+    const version = normalizeHelpVersion(
+      vscode.workspace.getConfiguration("domino-lss-lotusscript").get("helpVersion")
+    );
     const base = basicBase(version);
     /** @type {vscode.CompletionItem[]} */
     const items = [];
@@ -43,7 +43,12 @@ function registerHclCompletions(context) {
       const file = notesClassDocFile(cls);
       const item = new vscode.CompletionItem(cls, vscode.CompletionItemKind.Class);
       item.detail = "Domino LotusScript class (HCL)";
-      item.documentation = markdownDoc(version, file, `${cls} — LotusScript class reference`);
+      item.documentation = markdownDoc(
+        version,
+        file,
+        `${cls} — LotusScript class reference`,
+        cls
+      );
       items.push(item);
     }
 
@@ -77,10 +82,9 @@ function registerHclCompletions(context) {
         return undefined;
       }
 
-      const version =
-        vscode.workspace
-          .getConfiguration("domino-lss-lotusscript")
-          .get("helpVersion", "14.5.1") + "";
+      const version = normalizeHelpVersion(
+        vscode.workspace.getConfiguration("domino-lss-lotusscript").get("helpVersion")
+      );
       if (!cache || cacheVersion !== version) {
         rebuild();
       }

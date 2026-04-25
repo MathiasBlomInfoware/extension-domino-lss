@@ -1,6 +1,6 @@
 // @ts-check
 const vscode = require("vscode");
-const { basicBase, notesClassDocFile } = require("./hcl-docs.js");
+const { notesClassTopicUrl, designerHelpMarkdownLink } = require("./hcl-docs.js");
 /** @type {Record<string, Array<{ name: string; kind: string; summary: string }>>} */
 const NOTES_MEMBERS = require("./data/notes-members.json");
 
@@ -79,9 +79,12 @@ function splitTopLevelParams(paramList) {
  * @param {{ name: string; kind: string; summary: string }} member
  */
 function memberHoverMarkdown(version, className, member) {
-  const classUrl = basicBase(version) + notesClassDocFile(className);
+  const classUrl = notesClassTopicUrl(version, className);
   const md = new vscode.MarkdownString(
-    `### ${className}.${member.name}\n\n**${member.kind}** — ${member.summary}\n\n---\n\n[HCL class reference — ${className}](${classUrl})`
+    `### ${className}.${member.name}\n\n**${member.kind}** — ${member.summary}\n\n---\n\n${designerHelpMarkdownLink(
+      `HCL class reference — ${className}`,
+      classUrl
+    )}`
   );
   md.isTrusted = true;
   return md;
@@ -121,7 +124,7 @@ function memberCompletionItems(version, className, filterLower) {
   if (!list) {
     return [];
   }
-  const classUrl = basicBase(version) + notesClassDocFile(className);
+  const classUrl = notesClassTopicUrl(version, className);
   /** @type {vscode.CompletionItem[]} */
   const items = [];
   for (const m of list) {
@@ -134,7 +137,10 @@ function memberCompletionItems(version, className, filterLower) {
     const it = new vscode.CompletionItem(m.name, kind);
     it.detail = `${className}.${m.name} (${m.kind}, HCL LotusScript)`;
     const doc = new vscode.MarkdownString(
-      `**${className}.${m.name}** · ${m.kind}\n\n${m.summary}\n\n[HCL class reference — ${className}](${classUrl})`
+      `**${className}.${m.name}** · ${m.kind}\n\n${m.summary}\n\n${designerHelpMarkdownLink(
+        `HCL class reference — ${className}`,
+        classUrl
+      )}`
     );
     doc.isTrusted = true;
     it.documentation = doc;

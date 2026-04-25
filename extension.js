@@ -1,5 +1,6 @@
 // @ts-check
 const vscode = require("vscode");
+const { normalizeHelpVersion, rewriteDesigner1450To151 } = require("./hcl-docs.js");
 const { registerHclCompletions } = require("./completion.js");
 const { registerHclHover } = require("./hover.js");
 const { isLssDocument } = require("./document-selectors.js");
@@ -100,8 +101,60 @@ function scanDocument(doc, collection) {
   collection.set(doc.uri, diagnostics);
 }
 
+/**
+ * One-time: normalize stored `helpVersion` (14.5.0 → 14.5.1, pasted URLs → version only, invisible chars).
+ * @param {vscode.ExtensionContext} context
+ */
+async function migrateHelpVersionCanonical(context) {
+  const key = "dominoLssMigratedHelpVersionCanonical2026";
+  if (context.globalState.get(key)) {
+    return;
+  }
+  const conf = vscode.workspace.getConfiguration("domino-lss-lotusscript");
+  const ins = conf.inspect("helpVersion");
+  try {
+    /**
+     * @param {import("vscode").ConfigurationTarget} target
+     * @param {unknown} val
+     */
+    const tryUpdate = async (target, val) => {
+      if (val === undefined || val === null) {
+        return;
+      }
+      const raw = String(val).trim();
+      if (!raw) {
+        return;
+      }
+      const next = normalizeHelpVersion(val);
+      if (next !== raw) {
+        await conf.update("helpVersion", next, target);
+      }
+    };
+    await tryUpdate(vscode.ConfigurationTarget.Global, ins?.globalValue);
+    await tryUpdate(vscode.ConfigurationTarget.Workspace, ins?.workspaceValue);
+  } catch {
+    // ignore if settings are read-only
+  }
+  await context.globalState.update(key, true);
+}
+
 /** @param {vscode.ExtensionContext} context */
 exports.activate = function (context) {
+  void migrateHelpVersionCanonical(context);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "domino-lss-lotusscript.openDesignerHelp",
+      async (/** @type {unknown} */ urlArg) => {
+        const url = typeof urlArg === "string" ? urlArg : "";
+        if (!url.startsWith("https://help.hcl-software.com/")) {
+          return;
+        }
+        await vscode.env.openExternal(vscode.Uri.parse(rewriteDesigner1450To151(url)));
+      }
+    )
+  );
+
   registerHclCompletions(context);
   registerHclHover(context);
 
