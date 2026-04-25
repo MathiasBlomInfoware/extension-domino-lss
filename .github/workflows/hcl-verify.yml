@@ -1,0 +1,33 @@
+name: Verify HCL Docs Coverage
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+  pull_request:
+    paths:
+      - "hcl-docs.js"
+      - "data/notes-members.json"
+      - "tests/verify-hcl-docs.js"
+      - "tests/hcl-verify-config.json"
+      - "package.json"
+
+jobs:
+  verify-hcl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run HCL verification
+        run: npm run verify:hcl
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hcl-verify-report
+          path: tests/reports/hcl-verify-report.json

@@ -1,0 +1,22 @@
+{
+  "baseUrl": "https://help.hcl-software.com/dom_designer/14.5.1/basic/",
+  "classIndexFile": "H_4_LOTUSSCRIPT_NOTES_CLASSES_REFERENCE.html",
+  "strictMembers": false,
+  "classIndexExceptions": [
+    "NotesAgentContext",
+    "NotesMimeEntity",
+    "NotesMimeHeader"
+  ],
+  "classMemberExceptions": {
+    "NotesUIWorkspace": [
+      "CurrentCalendarView"
+    ],
+    "NotesUIDatabase": [
+      "OpenView"
+    ],
+    "NotesCalendarEntry": [
+      "ReadRangeMask1",
+      "ReadRangeMask2"
+    ]
+  }
+}

@@ -153,6 +153,17 @@ Run fixture-based scanner regression tests:
 npm run test:fixtures
 ```
 
+Verify coverage against HCL Domino Designer docs (`14.5.1`):
+
+```powershell
+npm run verify:hcl
+```
+
+This writes `tests/reports/hcl-verify-report.json` with:
+- topic link health for all HCL pages referenced by the extension
+- local Notes class presence in the HCL Notes class index
+- member-level drift report (`strictMembers: false` by default; set `true` in `tests/hcl-verify-config.json` to fail on drift)
+
 ## Project layout
 
 ```
