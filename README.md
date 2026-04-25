@@ -69,6 +69,20 @@ snippets/lotusscript.json
 language-configuration.json
 ```
 
+## Changelog
+
+### 0.2.0
+- Major data expansion: 58 classes / ~990 members in `data/notes-members.json`. New classes covered: `NotesACL`, `NotesACLEntry`, `NotesAdministrationProcess`, `NotesAgent`, `NotesAgentContext`, `NotesCalendar`, `NotesCalendarEntry`, `NotesCalendarNotice`, `NotesColorObject`, `NotesDateRange`, `NotesDbDirectory`, `NotesDirectory`, `NotesDirectoryNavigator`, `NotesDOMParser`, `NotesEmbeddedObject`, `NotesForm`, `NotesInternational`, `NotesMimeEntity`, `NotesMimeHeader`, `NotesNewsletter`, `NotesNoteCollection`, `NotesOutline`, `NotesOutlineEntry`, `NotesRegistration`, `NotesReplication`, `NotesReplicationEntry`, `NotesRichTextDocLink`, `NotesRichTextNavigator`, `NotesRichTextParagraphStyle`, `NotesRichTextRange`, `NotesRichTextSection`, `NotesRichTextStyle`, `NotesRichTextTab`, `NotesRichTextTable`, `NotesSAXParser`, `NotesTimer`, `NotesUIDatabase`, `NotesUIDocument`, `NotesUIView`, `NotesViewColumn`, `NotesViewEntry`, `NotesViewEntryCollection`, `NotesViewNavigator`, `NotesXSLTransformer`. Existing `NotesSession`, `NotesDatabase`, `NotesDocument`, `NotesDocumentCollection`, `NotesView`, `NotesUIWorkspace`, `NotesItem`, `NotesDateTime`, `NotesName`, `NotesRichTextItem`, `NotesDXLExporter`, `NotesDXLImporter`, `NotesStream`, `NotesLog` significantly fleshed out.
+- `NOTES_CLASSES` (completion seed list) realigned alphabetically and extended to match.
+
+### 0.1.5 / 0.1.6
+- Hygiene: `README.md`, `.vscodeignore`, `package.json` metadata (license / repository / bugs / homepage / Snippets+Linters categories).
+- Snippet keybindings moved to `Ctrl+K Ctrl+R` / `Ctrl+K Ctrl+Y`.
+- Notes var-type parser handles multi-`Dim`, class fields, `Set = New`, and `Property Get/Set/Let` parameters; cached per `(uri, document.version)`.
+- Live ASCII-comment diagnostics with 200 ms debounce.
+- `helpVersion` migration also walks every WorkspaceFolder scope.
+- Initial `NotesSession` Create-* fabriker + `NotesDXLExporter`/`Importer`/`Stream`/`Log`/`Name`.
+
 ## License
 
 MIT © Infoware AB / Mathias Blom
