@@ -154,7 +154,8 @@ function registerHclCompletions(context) {
   };
 
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(LOTUSSCRIPT_OR_LSS, provider),
+    // Trigger member completion immediately after `obj.` typing.
+    vscode.languages.registerCompletionItemProvider(LOTUSSCRIPT_OR_LSS, provider, "."),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (
         e.affectsConfiguration("domino-lss-lotusscript.helpVersion") ||

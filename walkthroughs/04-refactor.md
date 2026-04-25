@@ -6,7 +6,6 @@ The extension provides true workspace-wide navigation and refactoring for LotusS
 - **Find All References** (`Shift+F12`) — every read/write of an identifier in the workspace, with comments and string literals safely filtered out.
 - **Rename Symbol** (`F2`) — rename across all `.lss` files at once. Reserved keywords and `Notes*` class names are protected.
 - **Document Highlight** — every occurrence of the symbol under your cursor is highlighted in the active editor.
-- **Inlay Hints** — parameter names appear inline at Notes-class call sites (e.g. `db.GetView(viewName: "All")`).
 - **CodeLens** — `N references` above each `Sub`/`Function`/`Property`/`Class`, plus `Open <Class> in HCL help` for Notes types.
 
 Quick Fix offers refactorings on declaration lines:

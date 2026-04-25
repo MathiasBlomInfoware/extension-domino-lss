@@ -13,7 +13,6 @@ const { registerLotusScriptFormatter } = require("./formatter.js");
 const { registerLotusScriptCodeLens } = require("./codelens.js");
 const { registerLotusScriptReferences } = require("./references.js");
 const { registerLotusScriptCodeActions } = require("./code-actions.js");
-const { registerLotusScriptInlayHints } = require("./inlay-hints.js");
 const { registerLotusScriptStatusBar } = require("./status-bar.js");
 const { registerLotusScriptDocumentLinks } = require("./document-links.js");
 const { registerLotusScriptSemanticTokens } = require("./semantic-tokens.js");
@@ -95,7 +94,6 @@ exports.activate = function (context) {
   registerLotusScriptCodeLens(context);
   registerLotusScriptReferences(context);
   registerLotusScriptCodeActions(context);
-  registerLotusScriptInlayHints(context);
   registerLotusScriptStatusBar(context);
   registerLotusScriptDocumentLinks(context);
   registerLotusScriptSemanticTokens(context);
@@ -165,7 +163,8 @@ exports.activate = function (context) {
         e.affectsConfiguration("domino-lss-lotusscript.warnSetNewWithoutDim") ||
         e.affectsConfiguration("domino-lss-lotusscript.warnDeprecatedCalls") ||
         e.affectsConfiguration("domino-lss-lotusscript.warnMagicMsgboxConstants") ||
-        e.affectsConfiguration("domino-lss-lotusscript.warnNotesClassTypo")
+        e.affectsConfiguration("domino-lss-lotusscript.warnNotesClassTypo") ||
+        e.affectsConfiguration("domino-lss-lotusscript.warnUnusedSymbols")
       ) {
         for (const doc of vscode.workspace.textDocuments) {
           run(doc);

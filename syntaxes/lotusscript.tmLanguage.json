@@ -89,10 +89,17 @@
       "patterns": [
         {
           "name": "meta.preprocessor.lotusscript",
-          "match": "(?i)^\\s*%\\s*(Include)\\s+([^\\r\\n]+)",
+          "match": "(?i)^\\s*%\\s*(Include)\\s+(\"[^\"]+\"|[^\\r\\n]+)",
           "captures": {
             "1": { "name": "keyword.control.import.lotusscript" },
-            "2": { "name": "string.unquoted.include.lotusscript" }
+            "2": { "name": "string.quoted.double.include.lotusscript" }
+          }
+        },
+        {
+          "name": "meta.preprocessor.conditional.lotusscript",
+          "match": "(?i)^\\s*%\\s*(If|ElseIf|Else|End\\s+If|Pragma)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.preprocessor.lotusscript" }
           }
         }
       ]
@@ -100,22 +107,76 @@
     "declarations": {
       "patterns": [
         {
-          "name": "meta.function.lotusscript",
-          "match": "(?i)^\\s*(Public|Private)?\\s*(Sub|Function)\\s+([A-Za-z_][\\w]*)\\s*(\\([^\\n]*\\))",
+          "name": "meta.class.lotusscript",
+          "match": "(?i)^\\s*(Public|Private)?\\s*(Class)\\s+([A-Za-z_][\\w$]*)",
           "captures": {
             "1": { "name": "storage.modifier.lotusscript" },
-            "2": { "name": "keyword.other.lotusscript" },
+            "2": { "name": "storage.type.class.lotusscript" },
+            "3": { "name": "entity.name.type.class.lotusscript" }
+          }
+        },
+        {
+          "name": "meta.function.parameters.lotusscript",
+          "begin": "(?i)^\\s*(?:Public\\s+|Private\\s+|Static\\s+|Friend\\s+)*(?:Sub|Function|Property\\s+(?:Get|Set|Let))\\s+[A-Za-z_][\\w$]*\\s*\\(",
+          "beginCaptures": {
+            "0": { "name": "meta.function.parameters.begin.lotusscript" }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": { "name": "meta.function.parameters.end.lotusscript" }
+          },
+          "patterns": [
+            {
+              "name": "storage.modifier.lotusscript",
+              "match": "(?i)\\b(ByVal|ByRef|Optional|ParamArray)\\b"
+            },
+            {
+              "name": "variable.parameter.lotusscript",
+              "match": "(?i)\\b([A-Za-z_][\\w$]*)\\b(?=\\s*(?:As\\b|,|\\)))"
+            },
+            {
+              "name": "storage.type.lotusscript",
+              "match": "(?i)\\bAs\\s+(?:New\\s+)?([A-Za-z_][\\w$]*)\\b",
+              "captures": {
+                "1": { "name": "support.type.lotusscript" }
+              }
+            },
+            {
+              "name": "punctuation.separator.parameter.lotusscript",
+              "match": ","
+            }
+          ]
+        },
+        {
+          "name": "meta.function.lotusscript",
+          "match": "(?i)^\\s*(Public|Private|Static|Friend)?\\s*(Sub|Function)\\s+([A-Za-z_][\\w$]*)\\s*(\\([^\\n]*\\))?(?:\\s+As\\s+([A-Za-z_][\\w$]*))?",
+          "captures": {
+            "1": { "name": "storage.modifier.lotusscript" },
+            "2": { "name": "storage.type.function.lotusscript" },
             "3": { "name": "entity.name.function.lotusscript" },
-            "4": { "name": "meta.function.parameters.lotusscript" }
+            "4": { "name": "meta.function.parameters.lotusscript" },
+            "5": { "name": "storage.type.return.lotusscript" }
           }
         },
         {
           "name": "meta.property.lotusscript",
-          "match": "(?i)^\\s*(Public|Private)?\\s*(Property\\s+(Get|Set))\\s+([A-Za-z_][\\w]*)",
+          "match": "(?i)^\\s*(Public|Private|Static|Friend)?\\s*(Property\\s+(Get|Set|Let))\\s+([A-Za-z_][\\w$]*)",
           "captures": {
             "1": { "name": "storage.modifier.lotusscript" },
-            "2": { "name": "keyword.other.lotusscript" },
-            "4": { "name": "entity.name.function.lotusscript" }
+            "2": { "name": "storage.type.property.lotusscript" },
+            "3": { "name": "entity.name.function.lotusscript" }
+          }
+        },
+        {
+          "name": "meta.declare.external.lotusscript",
+          "match": "(?i)^\\s*(Declare)\\s+(Sub|Function)\\s+([A-Za-z_][\\w$]*)\\s+(Lib)\\s+(\"[^\"]+\")\\s*(Alias\\s+\"[^\"]+\")?",
+          "captures": {
+            "1": { "name": "storage.type.declare.lotusscript" },
+            "2": { "name": "storage.type.function.lotusscript" },
+            "3": { "name": "entity.name.function.external.lotusscript" },
+            "4": { "name": "keyword.other.lotusscript" },
+            "5": { "name": "string.quoted.double.lotusscript" },
+            "6": { "name": "keyword.other.lotusscript" }
           }
         }
       ]
@@ -155,8 +216,12 @@
     "types": {
       "patterns": [
         {
-          "name": "support.type.lotusscript",
-          "match": "(?i)\\b(Integer|Long|Single|Double|Currency|String|Variant|Boolean|Date|Object|List|Byte|Notes[A-Za-z][\\w]*)\\b"
+          "name": "storage.type.lotusscript",
+          "match": "(?i)\\b(Integer|Long|Single|Double|Currency|String|Variant|Boolean|Date|Object|List|Byte)\\b"
+        },
+        {
+          "name": "support.class.lotusscript",
+          "match": "(?i)\\b(Notes[A-Za-z][\\w]*)\\b"
         }
       ]
     },
@@ -165,6 +230,10 @@
         {
           "name": "constant.language.lotusscript",
           "match": "(?i)\\b(True|False|Nothing|Empty|Null|Pi)\\b"
+        },
+        {
+          "name": "constant.other.lotusscript",
+          "match": "\\b([A-Z][A-Z0-9_]{2,})\\b"
         }
       ]
     },
@@ -181,6 +250,13 @@
         {
           "name": "support.function.lotusscript",
           "match": "(?i)\\b(Print|Msgbox|Inputbox|CreateObject|GetObject|Cbool|Cbyte|Ccur|Cdate|Cdbl|Cint|Clng|Csng|Cstr|Cvar|Cvdate|Format|Ucase|Lcase|Trim|Ltrim|Rtrim|Len|Left|Right|Mid|InStr|Replace|Split|Join|Array|Erase|Lbound|Ubound|Asc|Chr|Str|Val|Hex|Oct|Abs|Int|Fix|Sgn|Sqr|Rnd|Sin|Cos|Tan|Atn|Exp|Log|Randomize|Timer|Date|Time|Now|Day|Month|Year|Hour|Minute|Second|Datevalue|Timevalue|Weekday|Monthname|Formatdatetime|Edate|Eomonth|Isdate|Isnumeric|Isarray|Isempty|Isnull|Typename|VarType|Me)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "variable.other.member.lotusscript",
+          "match": "(?<=[.])\\s*([A-Za-z_][\\w$]*)\\b",
+          "captures": {
+            "1": { "name": "variable.other.member.lotusscript" }
+          }
         }
       ]
     }

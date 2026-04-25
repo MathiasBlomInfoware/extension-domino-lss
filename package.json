@@ -2,7 +2,7 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "0.5.0",
+  "version": "1.0.0",
   "publisher": "infoware",
   "license": "MIT",
   "homepage": "https://github.com/MathiasBlomInfoware/extension-domino-lss#readme",
@@ -151,11 +151,6 @@
           "default": true,
           "description": "Show 'N references' code lenses above Sub/Function/Property/Class declarations (resolved lazily)."
         },
-        "domino-lss-lotusscript.enableInlayHints": {
-          "type": "boolean",
-          "default": true,
-          "description": "Show parameter-name inlay hints at Notes* method call sites."
-        },
         "domino-lss-lotusscript.enableStatusBar": {
           "type": "boolean",
           "default": true,
@@ -190,6 +185,11 @@
           "type": "boolean",
           "default": true,
           "description": "Suggest the closest Notes* class name (Levenshtein) when 'As [New] Notes…' references an unknown class."
+        },
+        "domino-lss-lotusscript.warnUnusedSymbols": {
+          "type": "boolean",
+          "default": true,
+          "description": "Hint when local variables, parameters, or private class members are declared but never used."
         }
       }
     },
@@ -260,7 +260,7 @@
           {
             "id": "configure",
             "title": "Tune to your team's style",
-            "description": "Search settings for `domino-lss-lotusscript` to enable/disable each diagnostic, change the HCL help version, or hide CodeLenses and inlay hints.\n[Open settings](command:workbench.action.openSettings?%22domino-lss-lotusscript%22)",
+            "description": "Search settings for `domino-lss-lotusscript` to enable/disable each diagnostic, change the HCL help version, or hide CodeLenses.\n[Open settings](command:workbench.action.openSettings?%22domino-lss-lotusscript%22)",
             "media": { "markdown": "walkthroughs/05-configure.md" }
           }
         ]

@@ -18,7 +18,6 @@ Syntax highlighting and language basics for **LotusScript** and HCL Domino **`.l
 - **Format Document** (`Shift+Alt+F`) re-indents structural blocks (Sub/Function/Property/Class/If/Else/ElseIf/For/ForAll/Do/While/With/Select/Case) using your editor’s tab settings, and trims trailing whitespace. `%REM` blocks are left untouched.
 - **CodeLens** *“Open <NotesClass> in HCL help”* above each `Dim … As Notes*` declaration and `Set … = New Notes*` (toggle with `enableCodeLens`).
 - **Reference CodeLens** *“N references”* above `Sub`/`Function`/`Property`/`Class` declarations (toggle with `enableReferenceCodeLens`).
-- **Inlay Hints** for Notes member call parameters (toggle with `enableInlayHints`).
 - **Semantic tokens** that distinguish user symbols, Notes classes/types, parameters, and deprecated calls (toggle with `enableSemanticTokens`).
 - **Document links** for `%Include "..."` targets and inline `http(s)` URLs.
 - **Status bar** context for current symbol + per-file LotusScript diagnostic counts.
@@ -47,7 +46,6 @@ All under **`domino-lss-lotusscript.*`**:
 | `checkStructuralBlocks` | `true` | Warn about unclosed / mismatched block constructs. |
 | `enableCodeLens` | `true` | Show *“Open <NotesClass> in HCL help”* above declarations. |
 | `enableReferenceCodeLens` | `true` | Show *“N references”* above declarations. |
-| `enableInlayHints` | `true` | Show parameter-name inlay hints for Notes member calls. |
 | `enableSemanticTokens` | `true` | Enable semantic token classification for richer theming. |
 | `enableStatusBar` | `true` | Show current symbol and file diagnostics in status bar. |
 | `warnFallThroughErrorHandler` | `true` | Warn on implicit fall-through into `ErrorHandler:` labels. |
@@ -55,6 +53,54 @@ All under **`domino-lss-lotusscript.*`**:
 | `warnDeprecatedCalls` | `true` | Warn on deprecated calls like `Lsi_info`. |
 | `warnMagicMsgboxConstants` | `true` | Warn on numeric Msgbox flags and suggest `MB_*` constants. |
 | `warnNotesClassTypo` | `true` | Suggest nearest Notes class when type name seems misspelled. |
+| `warnUnusedSymbols` | `true` | Hint for unused local variables, parameters, and private class members. |
+
+## Theme tuning (semantic tokens)
+
+To clearly separate **HCL/library symbols** from **your own code**, keep semantic highlighting enabled:
+
+```json
+"editor.semanticHighlighting.enabled": true
+```
+
+Then add token-color customizations in your `settings.json`:
+
+```json
+"editor.semanticTokenColorCustomizations": {
+  "enabled": true,
+  "rules": {
+    "class.defaultLibrary": "#4FC1FF",
+    "function.defaultLibrary": "#DCDCAA",
+    "function.defaultLibrary.deprecated": {
+      "foreground": "#D16969",
+      "fontStyle": "strikethrough"
+    },
+    "class.declaration": {
+      "foreground": "#4EC9B0",
+      "fontStyle": "bold"
+    },
+    "function.declaration": {
+      "foreground": "#C586C0",
+      "fontStyle": "bold"
+    },
+    "method.declaration": {
+      "foreground": "#C586C0",
+      "fontStyle": "bold"
+    },
+    "property.declaration": {
+      "foreground": "#9CDCFE",
+      "fontStyle": "bold"
+    },
+    "parameter": "#9CDCFE"
+  }
+}
+```
+
+Suggested visual mapping:
+
+- `*.defaultLibrary` = HCL/Notes built-ins and classes (`NotesDocument`, `GetThreadInfo`, `Msgbox`)
+- `*.declaration` = your own declarations (`Class DemoExporter`, `Sub Initialize`, `Function Foo`)
+- `function.defaultLibrary.deprecated` = old calls such as `Lsi_info`
 
 ## Commands
 
@@ -105,7 +151,6 @@ formatter.js                 Format Document (structural re-indent + trim traili
 codelens.js                  CodeLens 'Open <NotesClass> in HCL help'
 references.js                Reference / rename / document-highlight providers
 code-actions.js              Quick fixes + small refactors from diagnostics
-inlay-hints.js               Parameter inlay hints for Notes member calls
 semantic-tokens.js           Semantic token provider for richer theming
 impl-typedef.js              Type definition / implementation providers
 document-links.js            Clickable %Include and URL links in .lss files

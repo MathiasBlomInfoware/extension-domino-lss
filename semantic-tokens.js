@@ -17,7 +17,7 @@ const TOKEN_TYPES = [
   "macro",
   "decorator",
 ];
-const TOKEN_MODIFIERS = ["declaration", "static", "deprecated"];
+const TOKEN_MODIFIERS = ["declaration", "static", "deprecated", "defaultLibrary"];
 const LEGEND = new vscode.SemanticTokensLegend(TOKEN_TYPES, TOKEN_MODIFIERS);
 
 const BUILTIN_LOWER = new Set(BUILTIN_NAMES.map((n) => n.toLowerCase()));
@@ -46,6 +46,12 @@ const TYPE_NAMES = new Set([
  */
 function buildTokens(document) {
   const builder = new vscode.SemanticTokensBuilder(LEGEND);
+  const mod = {
+    declaration: 1 << TOKEN_MODIFIERS.indexOf("declaration"),
+    static: 1 << TOKEN_MODIFIERS.indexOf("static"),
+    deprecated: 1 << TOKEN_MODIFIERS.indexOf("deprecated"),
+    defaultLibrary: 1 << TOKEN_MODIFIERS.indexOf("defaultLibrary"),
+  };
 
   /** @type {Set<string>} declared user identifiers (lowercased) */
   const userClasses = new Set();
@@ -57,6 +63,8 @@ function buildTokens(document) {
   const userProps = new Set();
   /** @type {Map<string, Set<string>>} per-procedure local parameter names (lowercased) */
   const paramSets = new Map();
+  /** @type {Set<string>} declaration markers `${line}:${col}:${lower}` */
+  const declarations = new Set();
 
   /** @type {{ line: number; clean: string }[]} */
   const lines = [];
@@ -67,21 +75,31 @@ function buildTokens(document) {
     let m;
     if ((m = clean.match(/^\s*Class\s+([A-Za-z_]\w*)/i))) {
       userClasses.add(m[1].toLowerCase());
+      const col = clean.toLowerCase().indexOf(m[1].toLowerCase());
+      if (col >= 0) declarations.add(`${i}:${col}:${m[1].toLowerCase()}`);
     }
     if ((m = clean.match(/^\s*(?:Public\s+|Private\s+|Static\s+|Friend\s+)*Sub\s+([A-Za-z_]\w*)\s*\(([^)]*)\)/i))) {
       userSubs.add(m[1].toLowerCase());
+      const col = clean.toLowerCase().indexOf(m[1].toLowerCase());
+      if (col >= 0) declarations.add(`${i}:${col}:${m[1].toLowerCase()}`);
       const params = paramNames(m[2]);
       paramSets.set(`sub:${m[1].toLowerCase()}:${i}`, params);
     } else if ((m = clean.match(/^\s*(?:Public\s+|Private\s+|Static\s+|Friend\s+)*Sub\s+([A-Za-z_]\w*)/i))) {
       userSubs.add(m[1].toLowerCase());
+      const col = clean.toLowerCase().indexOf(m[1].toLowerCase());
+      if (col >= 0) declarations.add(`${i}:${col}:${m[1].toLowerCase()}`);
     }
     if ((m = clean.match(/^\s*(?:Public\s+|Private\s+|Static\s+|Friend\s+)*Function\s+([A-Za-z_]\w*)\s*\(([^)]*)\)/i))) {
       userFuncs.add(m[1].toLowerCase());
+      const col = clean.toLowerCase().indexOf(m[1].toLowerCase());
+      if (col >= 0) declarations.add(`${i}:${col}:${m[1].toLowerCase()}`);
       const params = paramNames(m[2]);
       paramSets.set(`function:${m[1].toLowerCase()}:${i}`, params);
     }
     if ((m = clean.match(/^\s*(?:Public\s+|Private\s+|Static\s+|Friend\s+)*Property\s+(?:Get|Set|Let)\s+([A-Za-z_]\w*)/i))) {
       userProps.add(m[1].toLowerCase());
+      const col = clean.toLowerCase().indexOf(m[1].toLowerCase());
+      if (col >= 0) declarations.add(`${i}:${col}:${m[1].toLowerCase()}`);
     }
   });
 
@@ -113,11 +131,12 @@ function buildTokens(document) {
         continue;
       }
       if (NOTES_CLASSES_LOWER.has(lower)) {
-        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("class"), 0);
+        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("class"), mod.defaultLibrary);
         continue;
       }
       if (userClasses.has(lower)) {
-        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("class"), 0);
+        const flags = declarations.has(`${i}:${col}:${lower}`) ? mod.declaration : 0;
+        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("class"), flags);
         continue;
       }
       if (DEPRECATED_LOWER.has(lower)) {
@@ -126,12 +145,12 @@ function buildTokens(document) {
           col,
           word.length,
           TOKEN_TYPES.indexOf("function"),
-          1 << TOKEN_MODIFIERS.indexOf("deprecated")
+          mod.deprecated | mod.defaultLibrary
         );
         continue;
       }
       if (BUILTIN_LOWER.has(lower)) {
-        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("function"), 0);
+        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("function"), mod.defaultLibrary);
         continue;
       }
       if (currentParams.has(lower)) {
@@ -141,18 +160,20 @@ function buildTokens(document) {
       if (userSubs.has(lower) || userFuncs.has(lower)) {
         const after = clean.slice(col + word.length);
         if (/^\s*\(/.test(after) || /^\s*$/.test(after)) {
+          const flags = declarations.has(`${i}:${col}:${lower}`) ? mod.declaration : 0;
           builder.push(
             i,
             col,
             word.length,
             TOKEN_TYPES.indexOf(userSubs.has(lower) ? "method" : "function"),
-            0
+            flags
           );
           continue;
         }
       }
       if (userProps.has(lower)) {
-        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("property"), 0);
+        const flags = declarations.has(`${i}:${col}:${lower}`) ? mod.declaration : 0;
+        builder.push(i, col, word.length, TOKEN_TYPES.indexOf("property"), flags);
         continue;
       }
     }

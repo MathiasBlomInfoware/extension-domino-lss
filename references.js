@@ -1,7 +1,7 @@
 // @ts-check
 const vscode = require("vscode");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
-const { findIdentifierOccurrences, identifierAtPosition } = require("./text-scan.js");
+const { findIdentifierOccurrences, identifierAtPosition, stripCommentsAndStrings } = require("./text-scan.js");
 const { scanSymbols } = require("./symbols.js");
 
 const WORKSPACE_FILE_LIMIT = 5000;
@@ -138,6 +138,76 @@ function findDeclarationInDoc(document, name) {
 }
 
 /**
+ * @param {string} line
+ */
+function splitTopLevelComma(line) {
+  const out = [];
+  let depth = 0;
+  let cur = "";
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === "(") depth++;
+    else if (c === ")") depth = Math.max(0, depth - 1);
+    if (c === "," && depth === 0) {
+      out.push(cur.trim());
+      cur = "";
+      continue;
+    }
+    cur += c;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+/**
+ * @param {string} line
+ */
+function parseParamNames(line) {
+  /** @type {Set<string>} */
+  const out = new Set();
+  const m = line.match(/\(([^)]*)\)/);
+  if (!m || !m[1].trim()) return out;
+  for (const chunk of splitTopLevelComma(m[1])) {
+    const pm = chunk.match(/^\s*(?:ByVal|ByRef|Optional|ParamArray)?\s*([A-Za-z_]\w*)/i);
+    if (pm) out.add(pm[1].toLowerCase());
+  }
+  return out;
+}
+
+/**
+ * @param {vscode.TextDocument} document
+ * @param {vscode.Position} position
+ */
+function getProcedureLocalScope(document, position) {
+  const flat = flatten(scanSymbols(document));
+  const hit = flat
+    .filter(
+      (s) =>
+        (s.kind === vscode.SymbolKind.Method ||
+          s.kind === vscode.SymbolKind.Function ||
+          s.kind === vscode.SymbolKind.Property) &&
+        s.range.contains(position)
+    )
+    .sort((a, b) => b.range.start.line - a.range.start.line)[0];
+  if (!hit) return undefined;
+  const declLine = stripCommentsAndStrings(document.lineAt(hit.selectionRange.start.line).text);
+  const params = parseParamNames(declLine);
+  /** @type {Set<string>} */
+  const locals = new Set();
+  for (let i = hit.range.start.line + 1; i <= hit.range.end.line; i++) {
+    const line = stripCommentsAndStrings(document.lineAt(i).text);
+    const m = line.match(/^\s*(?:Dim|ReDim|Static)\s+(.+)$/i);
+    if (!m) continue;
+    for (const chunk of splitTopLevelComma(m[1])) {
+      const c = chunk.replace(/^\s*Preserve\s+/i, "");
+      const vm = c.match(/^([A-Za-z_]\w*)/);
+      if (vm) locals.add(vm[1].toLowerCase());
+    }
+  }
+  return { range: hit.range, params, locals };
+}
+
+/**
  * Open and parse all `.lss` files in the workspace.
  * @param {vscode.CancellationToken} [token]
  * @returns {Promise<vscode.TextDocument[]>}
@@ -220,6 +290,24 @@ const referenceProvider = {
     const word = identifierAtPosition(document, position);
     if (!word) {
       return undefined;
+    }
+    const localScope = getProcedureLocalScope(document, position);
+    if (localScope) {
+      const lower = word.word.toLowerCase();
+      if (localScope.params.has(lower) || localScope.locals.has(lower)) {
+        const localRefs = findIdentifierOccurrences(document, word.word)
+          .filter(
+            (r) => r.line >= localScope.range.start.line && r.line <= localScope.range.end.line
+          )
+          .map(
+            (r) =>
+              new vscode.Location(
+                document.uri,
+                new vscode.Range(r.line, r.start, r.line, r.end)
+              )
+          );
+        return localRefs;
+      }
     }
     const refs = await findReferencesInWorkspace(word.word, token);
     if (context.includeDeclaration === false) {
@@ -306,7 +394,27 @@ const renameProvider = {
     if (!word) {
       return undefined;
     }
-    const refs = await findReferencesInWorkspace(word.word, token);
+    let refs;
+    const localScope = getProcedureLocalScope(document, position);
+    if (localScope) {
+      const lower = word.word.toLowerCase();
+      if (localScope.params.has(lower) || localScope.locals.has(lower)) {
+        refs = findIdentifierOccurrences(document, word.word)
+          .filter(
+            (r) => r.line >= localScope.range.start.line && r.line <= localScope.range.end.line
+          )
+          .map(
+            (r) =>
+              new vscode.Location(
+                document.uri,
+                new vscode.Range(r.line, r.start, r.line, r.end)
+              )
+          );
+      }
+    }
+    if (!refs) {
+      refs = await findReferencesInWorkspace(word.word, token);
+    }
     const edit = new vscode.WorkspaceEdit();
     for (const r of refs) {
       edit.replace(r.uri, r.range, newName);

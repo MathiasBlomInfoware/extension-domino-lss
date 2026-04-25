@@ -2,6 +2,14 @@
 
 All notable changes to `infoware.domino-lss-lotusscript` are documented here.
 
+## 1.0.0
+
+- Stabilized core language tooling for production use: workspace references, rename, document highlights, type definition/implementation, and improved scope-aware rename/reference behavior for local variables and parameters.
+- Expanded diagnostics and quick fixes with practical quality checks (`unused local/parameter/private member`, fall-through handlers, typed `Set ... = New`, deprecated calls, Msgbox constants, Notes class typos, structural blocks, missing Option Declare).
+- Polished editing experience: stronger TextMate scopes and semantic token distinctions for HCL/default-library symbols vs user-defined declarations, refined completion triggering after `.`, document links for `%Include` and URLs, and richer status bar context.
+- Upgraded onboarding and docs: complete `examples/demo.lss` showcase with negative-test blocks, walkthrough/docs updates, commands/snippets improvements, and marketplace-ready metadata/icon.
+- Removed inlay hints after usability feedback to keep call sites visually clean.
+
 ## 0.5.0
 
 - Added workspace-level language tooling: references, rename, document highlights, code actions, and implementation/type definition providers for LotusScript symbols.

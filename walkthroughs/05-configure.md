@@ -9,7 +9,6 @@ Every feature is opt-out. Search settings for `domino-lss-lotusscript` and toggl
 | `enableHclDocHover` | Show hover documentation. |
 | `enableCodeLens` | Show `Open <NotesClass> in HCL help` lenses. |
 | `enableReferenceCodeLens` | Show `N references` lenses on Sub/Function/Property/Class. |
-| `enableInlayHints` | Show parameter-name inlay hints at Notes call sites. |
 | `enableStatusBar` | Show the current `Class.Method` in the status bar. |
 | `membersOnlyAfterDot` | After `obj.`, only suggest curated Notes members for typed `obj`. |
 | `requireAsciiComments` | Warn when comments contain non-ASCII characters. |

@@ -154,6 +154,21 @@ const provider = {
               actions.push(action);
             }
           }
+          if (!documentContainsLsConst(document) && /GetThreadInfo/i.test(diag.message)) {
+            const incAction = new vscode.CodeAction(
+              "Add %Include \"lsconst.lss\" at top of file",
+              vscode.CodeActionKind.QuickFix
+            );
+            const edit = new vscode.WorkspaceEdit();
+            edit.insert(
+              document.uri,
+              new vscode.Position(0, 0),
+              `%Include "lsconst.lss"\n`
+            );
+            incAction.edit = edit;
+            incAction.diagnostics = [diag];
+            actions.push(incAction);
+          }
           break;
         }
         case CODE.NOTES_CLASS_TYPO: {

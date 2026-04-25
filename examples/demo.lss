@@ -1,130 +1,319 @@
 %REM
-	Agent iwsExporter
+	Agent iwsSynchronizeData
 	Created Nov 6, 2024 by Mathias Blom/Infoware
 	Description: Comments for Agent
 %END REM
 Option Public
 Option Declare
-%Include "LSCONST.LSS"
 %REM
-	Class DXLExporter
+	Class iwsSynchronizeData
+	Created Nov 6, 2024 by Mathias Blom/Infoware
+	Description: Version 24.11
+	
+	© 1995-2024 Infoware Solutions Svenska AB. All rights reserved.
+	
+	This code and its content, including but not limited to text, graphics, images, 
+	and software, are the property of Infoware Solutions Svenska AB or its affiliates, 
+	and are protected by international copyright, trademark, and other intellectual 
+	property laws. Unauthorized use, reproduction, modification, or distribution of any 
+	content from this site is strictly prohibited without the prior written permission 
+	of Infoware Solutions Svenska AB.
+	
+	"Infoware Solutions" and related trademarks, logos, and service marks are the property 
+	of Infoware Solutions Svenska AB. All other trademarks appearing on this site are the 
+	property of their respective owners.
+	
+	For inquiries regarding permitted uses or for further assistance, 
+	please contact us at support@infoware.se
 %END REM
-Class DXLExporter
-	Private DXL As String
-	Private Documents List As NotesDocument
-	Private FilePath As String
+Class iwsSynchronizeData
+	Private SourceDatabase As NotesDatabase
+	Private TargetDatabase As NotesDatabase
+	Private ProfileDocument As NotesDocument
+	Private ProcessedUNIDs List As String
+	Private ErrorCount As Long
+	Private CreateCount As Long
+	Private UpdateCount As Long
+	Private DeleteCount As Long
+	Private SynchronizeCount As Long
+	Public ModifyItems List As String
+	Public FullSynchronization As Boolean
+	Public PrintChanges As Boolean
+	Public PrintErrors As Boolean
 	%REM
 		Sub New
 		Description: Comments for Sub
 	%END REM
-	Sub New(FilePath As String)
+	Sub New
 		On Error GoTo ErrorHandler
 		'----------
-		Me.FilePath = FilePath
-		If Dir$(Me.FilePath, ATTR_DIRECTORY) = "" Then
-			' Folder does not exist, so create it
-			MkDir Me.FilePath
-		End If
+		'Set Target
+		Dim Session As New NotesSession
+		Set Me.TargetDatabase = Session.Currentdatabase
+		Me.PrintErrors = True
 		'----------
 		Exit Sub
 ErrorHandler:
-		Error Err , Error & " / In procedure " & GetThreadInfo(LSI_THREAD_PROC) & " at line " & Erl
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
 	End Sub
 	%REM
-		Sub AddContent
+		Sub Delete
 		Description: Comments for Sub
 	%END REM
-	Public Sub AddDocument(Document As NotesDocument)
+	Sub Delete
 		On Error GoTo ErrorHandler
 		'----------
-		Set Documents(Document.Universalid) = Document
+		
 		'----------
 		Exit Sub
 ErrorHandler:
-		Error Err , Error & " / In procedure " & GetThreadInfo(LSI_THREAD_PROC) & " at line " & Erl
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
 	End Sub
 	%REM
-		Sub CreateDXL
+		Sub SetSource
 		Description: Comments for Sub
 	%END REM
-	Private Sub CreateDXL
-		On Error GoTo ErrorHandler
-		'----------
-		Me.DXL = ""
-		Me.DXL = Me.DXL & "<documents>" & Chr(13) 
-		ForAll Document In Me.Documents
-			Call CreateDocumentDXL(Document)
-		End ForAll
-		Me.DXL = Me.DXL & Chr(13) & "</documents>"
-		'----------
-		Exit Sub
-ErrorHandler:
-		Error Err , Error & " / In procedure " & GetThreadInfo(LSI_THREAD_PROC) & " at line " & Erl
-	End Sub
-	%REM
-		Sub Export
-		Description: Comments for Sub
-	%END REM
-	Public Sub Export(FileName As String, doAttchment As Boolean)
-		On Error GoTo ErrorHandler
-		'----------
-		Call CreateDXL
-		Dim FileNum As Integer
-		' Open the file for writing (creates the file if it does not exist)
-		FileNum = FreeFile()
-		Open Me.FilePath & "\" & ReplaceFileNameChar(FileName) For Output As FileNum
-		' Write some lines of text to the file
-		Write #FileNum, FullTrim(Me.DXL)
-		' Close the file
-		Close FileNum
-		'----------
-		Exit Sub
-ErrorHandler:
-		Error Err , Error & " / In procedure " & GetThreadInfo(LSI_THREAD_PROC) & " at line " & Erl
-	End Sub
-	%REM
-		Sub CreateDocumentXML
-		Description: Comments for Sub
-	%END REM
-	Private Sub CreateDocumentDXL(Document As NotesDocument)
+	Sub SetSource(Server As String, Filepath As String)
 		On Error GoTo ErrorHandler
 		'----------
 		Dim Session As New NotesSession
-		Dim DXLExporter As NotesDXLExporter
-		Set DXLExporter = Session.CreateDXLExporter
-		Dim sText As String
-		sText = DXLExporter.Export(Document)
-		If InStr(sText, "<document") > 0 Then
-			sText = Mid(sText, InStr(sText, "<document"))
+		Dim Database As NotesDatabase
+		Set Database = Session.Getdatabase(Server, Filepath)
+		If Database Is Nothing Then
+			Error 1000, "Source database not found"
+		Else
+			If Not Me.TargetDatabase Is Nothing Then
+				If Database.Replicaid = Me.TargetDatabase.Replicaid Then
+					Error 1000, "Source database and target databse can NOT be the same database"
+				End If 
+			End If
 		End If
-		Me.DXL = Me.DXL & sText
+		Set Me.SourceDatabase = Database
+		'Get Profile
+		Set Me.ProfileDocument = Me.TargetDatabase.GetProfileDocument("SynchronizeDataProfile", Me.SourceDatabase.Replicaid)
+		Dim LastFullSyncDateTime As New NotesDateTime(Me.ProfileDocument.LastFullSynchronization(0))
+		Dim NowDateTime As New NotesDateTime(Now)
+		If LastFullSyncDateTime.Dateonly < NowDateTime.Dateonly Then
+			Me.FullSynchronization = True
+		End If
 		'----------
 		Exit Sub
 ErrorHandler:
-		Error Err , Error & " / In procedure " & GetThreadInfo(LSI_THREAD_PROC) & " at line " & Erl
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
 	End Sub
 	%REM
-		Function ReplaceFileNameChar
-		Description: Comments for Function
+		Sub SetTarget
+		Description: Comments for Sub
 	%END REM
-	Function ReplaceFileNameChar(FileName As String) As String
+	Sub SetTarget(Server As String, Filepath As String)
 		On Error GoTo ErrorHandler
 		'----------
-		ReplaceFileNameChar = FileName
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, "<", "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, ">", "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, ":", "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, {"}, "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, "/", "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, "\", "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, "|", "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, "?", "_")
-		ReplaceFileNameChar = Replace(ReplaceFileNameChar, "*", "_")
+		Dim Session As New NotesSession
+		Dim Database As NotesDatabase
+		Set Database = Session.Getdatabase(Server, Filepath)
+		If Database Is Nothing Then
+			Error 1000, "Target database not found"
+		Else
+			If Not Me.SourceDatabase Is Nothing Then
+				If Database.Replicaid = Me.SourceDatabase.Replicaid Then
+					Error 1000, "Target database and source databse can NOT be the same database"
+				End If 
+			End If
+		End If
+		Set Me.TargetDatabase = Database
+		'Get Profile
+		Set Me.ProfileDocument = Me.TargetDatabase.GetProfileDocument("SynchronizeDataProfile", Me.SourceDatabase.Replicaid)
+		Dim LastFullSyncDateTime As New NotesDateTime(Me.ProfileDocument.LastFullSynchronization(0))
+		Dim NowDateTime As New NotesDateTime(Now)
+		If LastFullSyncDateTime.Dateonly < NowDateTime.Dateonly Then
+			Me.FullSynchronization = True
+		End If
+		'----------
+		Exit Sub
+ErrorHandler:
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
+	End Sub
+	%REM
+		Function SynchronizeDocument
+		Description: Comments for Function
+	%END REM
+	Function SynchronizeDocument(Document As NotesDocument) As NotesDocument
+		On Error GoTo ErrorHandler
+		'----------
+		'Check Source
+		If Document.Parentdatabase.Replicaid <> Me.SourceDatabase.Replicaid Then
+			Error 1000, "Document is not from source database " & Me.SourceDatabase.Title
+		End If
+		'Check already processed
+		If IsElement(ProcessedUNIDs(Document.Universalid)) Then
+			Exit Function
+		End If
+		dim pelle as NotesDocument.l
+		'Get Document
+		Dim TargetDocument As NotesDocument
+		On Error 4091 Resume Next
+		Set TargetDocument = Me.TargetDatabase.Getdocumentbyunid(Document.Universalid)
+		If TargetDocument Is Nothing Then
+			Set TargetDocument = New NotesDocument(Me.TargetDatabase)
+			TargetDocument.UniversalID = Document.UniversalID
+			Call Document.CopyAllItems(TargetDocument)
+			TargetDocument.SourceReplicaid = Me.SourceDatabase.Replicaid
+		End If
+		'Synchronize Document
+		If TargetDocument.Isnewnote Then
+			Call Me.ModifyDocument(TargetDocument)
+			Call TargetDocument.Save(True, False)
+			Me.ProcessedUNIDs(TargetDocument.Universalid) = "Created"
+			Me.CreateCount = Me.CreateCount + 1
+			If Me.PrintChanges Then Print "Created " & Document.Universalid
+		Else
+			If Me.FullSynchronization = False Then
+				If Document.Lastmodified > TargetDocument.Lastmodified Then
+					Call Document.CopyAllItems(TargetDocument, True)
+					Call Me.ModifyDocument(TargetDocument)
+					Call TargetDocument.Save(True, False)
+					Me.ProcessedUNIDs(TargetDocument.Universalid) = "Updated"
+					Me.UpdateCount = Me.UpdateCount + 1
+					If Me.PrintChanges Then Print "Updated " & Document.Universalid
+				Else
+					Me.ProcessedUNIDs(TargetDocument.Universalid) = "Synchronized"
+					Me.SynchronizeCount = Me.SynchronizeCount + 1
+					If Me.PrintChanges Then Print "Synchronized " & Document.Universalid
+				End If
+			Else
+				Call Document.CopyAllItems(TargetDocument, True)
+				Call Me.ModifyDocument(TargetDocument)
+				Call TargetDocument.Save(True, False)
+				Me.ProcessedUNIDs(TargetDocument.Universalid) = "Updated"
+				Me.UpdateCount = Me.UpdateCount + 1
+				If Me.PrintChanges Then Print "Updated " & Document.Universalid
+			End If
+		End If
+		Set SynchronizeDocument = TargetDocument
 		'----------
 		Exit Function
 ErrorHandler:
-		Error Err , Error & " / In procedure " & GetThreadInfo(LSI_THREAD_PROC) & " at line " & Erl
+		Me.ProcessedUNIDs(Document.Universalid) = "Error"
+		Me.ErrorCount = Me.ErrorCount + 1
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl & " on UNID:" & Document.Universalid
 	End Function
+	%REM
+		Sub ModifyDocument
+		Description: Comments for Sub
+		Examples:
+		SynchronizeData.ModifyItems("Field1") = "A_Text_String"
+		SynchronizeData.ModifyItems("Field2") = "<RemoveItem>"
+		SynchronizeData.ModifyItems("Field3") = "<Item:p_Name>"
+	%END REM
+	Private Sub ModifyDocument(Document As NotesDocument)
+		On Error GoTo ErrorHandler
+		'----------
+		ForAll Value In Me.ModifyItems
+			Dim Item As NotesItem
+			Dim ItemName As String
+			ItemName = ListTag(Value)
+			Set Item = Document.Getfirstitem(ItemName)
+			If Value = "<RemoveItem>" Then
+				If Not Item Is Nothing Then
+					Call Item.Remove
+				End If
+			Else
+				If Left(Value, 6) = "<Item:" Then
+					Dim SourceItem As NotesItem
+					Dim SourceItemName As String
+					SourceItemName = Replace(Replace(Value, "<Item:", ""), ">", "")
+					Set SourceItem = Document.Getfirstitem(SourceItemName)
+					If Not SourceItem Is Nothing Then
+						Call Document.Copyitem(SourceItem, ItemName)
+					End If
+				Else
+					Call Document.ReplaceItemValue(ItemName, Value)
+				End If
+			End If
+		End ForAll
+		'----------
+		Exit Sub
+ErrorHandler:
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
+	End Sub
+	%REM
+		Sub Done
+		Description: Remove all earlier synchronize documents not processed
+	%END REM
+	Sub Done
+		On Error GoTo ErrorHandler
+		'----------
+		Dim SearchFormula As String
+		SearchFormula = {SourceReplicaid = "} & Me.SourceDatabase.Replicaid & {"}
+		Dim DocumentCollection As NotesDocumentCollection
+		Set DocumentCollection = Me.TargetDatabase.Search(SearchFormula, Nothing, 0)
+		Dim Document As NotesDocument
+		Set Document = DocumentCollection.GetFirstDocument()
+		While Not(Document Is Nothing)
+			Dim NextDocument As NotesDocument
+			Set NextDocument = DocumentCollection.GetNextDocument(Document)
+			If Not IsElement(ProcessedUNIDs(Document.Universalid)) Then
+				If Me.PrintChanges Then Print "Deleted " & Document.Universalid
+				Call Document.Removepermanently(True)
+			End If
+			Set Document = NextDocument
+		Wend
+		'Update Profile
+		Me.ProfileDocument.LastSynchronization = Now
+		If Me.FullSynchronization Then
+			Me.ProfileDocument.LastFullSynchronization = Now
+		End If
+		Call Me.ProfileDocument.Save(True, False)
+		'----------
+		Exit Sub
+ErrorHandler:
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
+	End Sub
+	%REM
+		Function Summary
+		Description: Comments for Function
+	%END REM
+	Function Summary As String
+		On Error GoTo ErrorHandler
+		'----------
+		Summary = "Done: Synchronize " & Me.CreateCount + Me.UpdateCount + Me.DeleteCount + Me.ErrorCount + Me.SynchronizeCount &_
+		" documents from " & Me.SourceDatabase.Filepath & " to " & Me.TargetDatabase.Filepath & " (" &_
+		Me.CreateCount & " Created, " &_
+		Me.UpdateCount & " Updated, " &_
+		Me.DeleteCount & " Deleted, " &_
+		Me.ErrorCount & " Errors, " &_
+		Me.SynchronizeCount & " Synchronized)"
+		'----------
+		Exit Function
+ErrorHandler:
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
+	End Function
+	%REM
+		Sub SynchronizeView
+		Description: Comments for Sub
+	%END REM
+	Sub SynchronizeView(ViewName As String)
+		On Error GoTo ErrorHandler
+		'----------
+		Dim View As NotesView
+		Set View = Me.SourceDatabase.Getview(ViewName)
+		Dim Document As NotesDocument
+		Set Document = View.GetFirstDocument
+		While Not Document Is Nothing
+			On Error GoTo LoopError
+			Call SynchronizeDocument(Document)
+LoopResume:
+			On Error GoTo ErrorHandler
+			Set Document = View.Getnextdocument(Document)
+		Wend
+		'----------
+		Exit Sub
+LoopError:
+		If Me.PrintErrors Then Print "Error: " & Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl & " (ErrorCode:" & Err & ")"
+		Resume LoopResume
+ErrorHandler:
+		Error Err , Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl
+	End Sub
 End Class
 %REM
 	Sub Initialize
@@ -134,109 +323,16 @@ Sub Initialize
 	On Error GoTo ErrorHandler
 	'----------
 	Dim Session As New NotesSession
-	Dim Exporter As New DXLExporter("C:\temp")
-	Dim Database As NotesDatabase
-	Set Database = Session.Getdatabase(Session.Currentdatabase.Server, "catalog.nsf")
-	Dim View As NotesView
-	Set View = Database.GetView("($ReplicaID)")
-	
-	Call ExportDocumentCollection(Database.AllDocuments)
-	
-	Exit Sub 
-	
-	Dim Document As NotesDocument
-	Set Document = View.GetFirstDocument
-	Dim Count As Integer
-	While Not(Document Is Nothing)
-		Count = Count + 1
-		Call Exporter.AddDocument(Document)
-		'Call Export(myDocument)
-		'If Count > 1 Then
-		'	GoTo ExitLoop
-		'End If
-		Set Document = View.GetNextDocument(Document)
-	Wend
-ExitLoop:
-	Call Exporter.Export("temp.xml", True)
+	Dim SynchronizeData As New iwsSynchronizeData
+	Call SynchronizeData.SetSource(Session.Currentdatabase.Server, "catalog")
+	SynchronizeData.PrintErrors = False
+	Call SynchronizeData.SynchronizeView("($ReplicaID)")
+	Call SynchronizeData.Done
+	Print SynchronizeData.Summary 
 	'----------
 Exit_:
 	Exit Sub
 ErrorHandler:
-	Print "Error: " & Error & " / In procedure " & GetThreadInfo(LSI_THREAD_PROC) & " at line " & Erl & " (ErrorCode:" & Err & ")"
+	Print "Error: " & Error & " / In procedure " & GetThreadInfo(1) & " at line " & Erl & " (ErrorCode:" & Err & ")"
 	Resume Exit_
 End Sub
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%REM
-	Sub ExportDocumentCollection
-	Description: Comments for Sub
-%END REM
-Sub ExportDocumentCollection(DocumentCollection As NotesDocumentCollection)
-	Dim Session As New NotesSession
-	'Dim Database As NotesDatabase
-	'Set Database = Session.CurrentDatabase
-	Dim Stream As NotesStream
-	Set Stream = session.CreateStream
-	Dim FileName As String
-
-	Call Stream.Truncate
-	Dim DXLExporter As NotesDXLExporter
-	Set DXLExporter = Session.CreateDXLExporter
-	Call DXLExporter.SetInput(DocumentCollection)
-	Call DXLExporter.SetOutput(Stream)
-	Call DXLExporter.Process
-	
-	Dim exporter As NotesDXLExporter
-	Dim sOutput As String
-	Dim filenum As Integer
-	
-	Set exporter = session.CreateDXLExporter
-	sOutput = exporter.Export(DocumentCollection)
-	filenum = FreeFile
-	Open "c:\temp\ExportDocumentCollection.xml" For Output As filenum
-	Write #filenum, sOutput
-	Close filenum
-End Sub
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

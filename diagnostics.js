@@ -3,6 +3,7 @@ const vscode = require("vscode");
 const { isLssDocument } = require("./document-selectors.js");
 const { NOTES_CLASSES } = require("./hcl-docs.js");
 const { stripCommentsAndStrings } = require("./text-scan.js");
+const { scanSymbols } = require("./symbols.js");
 
 const NON_ASCII = /[^\x00-\x7F]/;
 const TODO_RE = /\b(TODO|FIXME|XXX|HACK|BUG)\b[:\s]?(.*)/i;
@@ -20,6 +21,9 @@ const CODE = Object.freeze({
   DEPRECATED_CALL: "deprecated-call",
   MSGBOX_MAGIC_NUMBER: "msgbox-magic-number",
   NOTES_CLASS_TYPO: "notes-class-typo",
+  UNUSED_LOCAL: "unused-local",
+  UNUSED_PARAMETER: "unused-parameter",
+  UNUSED_PRIVATE_MEMBER: "unused-private-member",
 });
 
 /**
@@ -123,6 +127,7 @@ function scanDocument(doc, collection) {
   const checkDeprecated = conf.get("warnDeprecatedCalls", true);
   const checkMsgbox = conf.get("warnMagicMsgboxConstants", true);
   const checkNotesTypo = conf.get("warnNotesClassTypo", true);
+  const checkUnused = conf.get("warnUnusedSymbols", true);
 
   /** @type {vscode.Diagnostic[]} */
   const diagnostics = [];
@@ -495,6 +500,10 @@ function scanDocument(doc, collection) {
     }
   }
 
+  if (checkUnused) {
+    runUnusedSymbolChecks(doc, diagnostics);
+  }
+
   collection.set(doc.uri, diagnostics);
 }
 
@@ -532,6 +541,165 @@ function popMatch(stack, kind, line, text, diagnostics) {
     diagnostics.push(d);
   }
   stack.pop();
+}
+
+/**
+ * @param {string} line
+ */
+function splitTopLevelComma(line) {
+  const out = [];
+  let depth = 0;
+  let cur = "";
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === "(") depth++;
+    else if (c === ")") depth = Math.max(0, depth - 1);
+    if (c === "," && depth === 0) {
+      out.push(cur.trim());
+      cur = "";
+      continue;
+    }
+    cur += c;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+/**
+ * @param {string} line
+ * @returns {{ name: string; col: number }[]}
+ */
+function parseParamDecls(line) {
+  const out = [];
+  const m = line.match(/\(([^)]*)\)/);
+  if (!m || !m[1].trim()) return out;
+  for (const chunk of splitTopLevelComma(m[1])) {
+    const pm = chunk.match(/^\s*(?:ByVal|ByRef|Optional|ParamArray)?\s*([A-Za-z_]\w*)/i);
+    if (!pm) continue;
+    const name = pm[1];
+    const col = line.toLowerCase().indexOf(name.toLowerCase());
+    out.push({ name, col: col < 0 ? 0 : col });
+  }
+  return out;
+}
+
+/**
+ * @param {string} line
+ * @returns {{ name: string; col: number }[]}
+ */
+function parseLocalDecls(line) {
+  const out = [];
+  const m = line.match(/^\s*(?:Dim|ReDim|Static)\s+(.+)$/i);
+  if (!m) return out;
+  for (const chunk of splitTopLevelComma(m[1])) {
+    const c = chunk.replace(/^\s*Preserve\s+/i, "");
+    const vm = c.match(/^([A-Za-z_]\w*)/);
+    if (!vm) continue;
+    const name = vm[1];
+    const col = line.toLowerCase().indexOf(name.toLowerCase());
+    out.push({ name, col: col < 0 ? 0 : col });
+  }
+  return out;
+}
+
+/**
+ * @param {vscode.TextDocument} doc
+ * @param {string} name
+ * @param {{ start: number; end: number }} scope
+ */
+function countUsesInLineScope(doc, name, scope) {
+  const re = new RegExp(`(?<![A-Za-z0-9_$])${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![A-Za-z0-9_$])`, "gi");
+  let count = 0;
+  for (let i = scope.start; i <= scope.end; i++) {
+    const clean = stripCommentsAndStrings(doc.lineAt(i).text);
+    re.lastIndex = 0;
+    while (re.exec(clean)) count++;
+  }
+  return count;
+}
+
+/**
+ * @param {vscode.TextDocument} doc
+ * @param {vscode.Diagnostic[]} diagnostics
+ */
+function runUnusedSymbolChecks(doc, diagnostics) {
+  const symbols = scanSymbols(doc);
+  /** @type {ReturnType<typeof scanSymbols>} */
+  const all = [];
+  (function walk(list) {
+    for (const s of list) {
+      all.push(s);
+      if (s.children?.length) walk(s.children);
+    }
+  })(symbols);
+
+  const procs = all.filter(
+    (s) =>
+      s.kind === vscode.SymbolKind.Method ||
+      s.kind === vscode.SymbolKind.Function ||
+      s.kind === vscode.SymbolKind.Property
+  );
+
+  for (const p of procs) {
+    const declLineNo = p.selectionRange.start.line;
+    const declLine = doc.lineAt(declLineNo).text;
+    const scope = { start: p.range.start.line, end: p.range.end.line };
+
+    for (const param of parseParamDecls(declLine)) {
+      const uses = countUsesInLineScope(doc, param.name, scope);
+      if (uses <= 1) {
+        const d = new vscode.Diagnostic(
+          new vscode.Range(declLineNo, param.col, declLineNo, param.col + param.name.length),
+          `Parameter '${param.name}' is never used.`,
+          vscode.DiagnosticSeverity.Hint
+        );
+        d.source = "lotusscript";
+        d.code = CODE.UNUSED_PARAMETER;
+        diagnostics.push(d);
+      }
+    }
+
+    for (let i = scope.start + 1; i <= scope.end; i++) {
+      const line = doc.lineAt(i).text;
+      for (const local of parseLocalDecls(stripCommentsAndStrings(line))) {
+        const uses = countUsesInLineScope(doc, local.name, scope);
+        if (uses <= 1) {
+          const col = line.toLowerCase().indexOf(local.name.toLowerCase());
+          const d = new vscode.Diagnostic(
+            new vscode.Range(i, col < 0 ? 0 : col, i, (col < 0 ? 0 : col) + local.name.length),
+            `Local variable '${local.name}' is never used.`,
+            vscode.DiagnosticSeverity.Hint
+          );
+          d.source = "lotusscript";
+          d.code = CODE.UNUSED_LOCAL;
+          diagnostics.push(d);
+        }
+      }
+    }
+  }
+
+  const classes = all.filter((s) => s.kind === vscode.SymbolKind.Class);
+  for (const c of classes) {
+    for (let i = c.range.start.line + 1; i <= c.range.end.line; i++) {
+      const raw = doc.lineAt(i).text;
+      const line = stripCommentsAndStrings(raw);
+      const m = line.match(/^\s*Private\s+([A-Za-z_]\w*)\b/i);
+      if (!m) continue;
+      const name = m[1];
+      const uses = countUsesInLineScope(doc, name, { start: c.range.start.line, end: c.range.end.line });
+      if (uses <= 1) {
+        const col = raw.toLowerCase().indexOf(name.toLowerCase());
+        const d = new vscode.Diagnostic(
+          new vscode.Range(i, col < 0 ? 0 : col, i, (col < 0 ? 0 : col) + name.length),
+          `Private member '${name}' is never used in class '${c.name}'.`,
+          vscode.DiagnosticSeverity.Hint
+        );
+        d.source = "lotusscript";
+        d.code = CODE.UNUSED_PRIVATE_MEMBER;
+        diagnostics.push(d);
+      }
+    }
+  }
 }
 
 module.exports = { scanDocument, CODE };
