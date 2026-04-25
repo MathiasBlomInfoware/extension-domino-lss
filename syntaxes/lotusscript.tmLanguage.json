@@ -4,7 +4,7 @@
   "scopeName": "source.lotusscript",
   "patterns": [
     {
-      "name": "constant.other.set.lotusscript",
+      "name": "string.quoted.other.set.lotusscript",
       "comment": "Quote as Replace set element ({\"}); must be first so { does not open the generic {…} rule whose inner \" would swallow until the next \".",
       "match": "\\{\"\\}(?!\")"
     },
@@ -45,7 +45,7 @@
           "match": "\\|[^|]\\|"
         },
         {
-          "name": "constant.other.set.lotusscript",
+          "name": "string.quoted.other.set.lotusscript",
           "comment": "One-line { … } character sets (no } inside elements). Nested quotes use \"\" only.",
           "match": "\\{[^\\n}]*\\}"
         }
@@ -136,7 +136,19 @@
         },
         {
           "name": "keyword.other.lotusscript",
-          "match": "(?i)\\b(End\\s+Sub|End\\s+Function|End\\s+Property)\\b"
+          "match": "(?i)\\b(End\\s+Sub|End\\s+Function|End\\s+Property|End\\s+Class|Class|Stop|Implements)\\b"
+        },
+        {
+          "name": "keyword.control.lotusscript",
+          "match": "(?i)\\b(ForAll|End\\s+ForAll)\\b"
+        },
+        {
+          "name": "keyword.other.lotusscript",
+          "match": "(?i)\\b(Use|UseLSX|Public|Private|Static|Global|Shared|TypeOf|On\\s+Event)\\b"
+        },
+        {
+          "name": "constant.language.lotusscript",
+          "match": "(?i)\\b(Nothing|Pi|True|False|Null|Empty)\\b"
         }
       ]
     },

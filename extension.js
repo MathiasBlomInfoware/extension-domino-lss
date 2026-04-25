@@ -11,6 +11,14 @@ const { registerLotusScriptSymbols } = require("./symbols.js");
 const { registerLotusScriptSignatureHelp } = require("./signature-help.js");
 const { registerLotusScriptFormatter } = require("./formatter.js");
 const { registerLotusScriptCodeLens } = require("./codelens.js");
+const { registerLotusScriptReferences } = require("./references.js");
+const { registerLotusScriptCodeActions } = require("./code-actions.js");
+const { registerLotusScriptInlayHints } = require("./inlay-hints.js");
+const { registerLotusScriptStatusBar } = require("./status-bar.js");
+const { registerLotusScriptDocumentLinks } = require("./document-links.js");
+const { registerLotusScriptSemanticTokens } = require("./semantic-tokens.js");
+const { registerLotusScriptImplAndTypeDef } = require("./impl-typedef.js");
+const { registerLotusScriptCommands } = require("./commands.js");
 
 const DIAG_SOURCE = "domino-lss-lotusscript";
 const DIAG_DEBOUNCE_MS = 200;
@@ -85,6 +93,14 @@ exports.activate = function (context) {
   registerLotusScriptSignatureHelp(context);
   registerLotusScriptFormatter(context);
   registerLotusScriptCodeLens(context);
+  registerLotusScriptReferences(context);
+  registerLotusScriptCodeActions(context);
+  registerLotusScriptInlayHints(context);
+  registerLotusScriptStatusBar(context);
+  registerLotusScriptDocumentLinks(context);
+  registerLotusScriptSemanticTokens(context);
+  registerLotusScriptImplAndTypeDef(context);
+  registerLotusScriptCommands(context);
 
   const collection = vscode.languages.createDiagnosticCollection(DIAG_SOURCE);
   context.subscriptions.push(collection);
@@ -144,7 +160,12 @@ exports.activate = function (context) {
         e.affectsConfiguration("domino-lss-lotusscript.requireAsciiComments") ||
         e.affectsConfiguration("domino-lss-lotusscript.warnMissingOptionDeclare") ||
         e.affectsConfiguration("domino-lss-lotusscript.highlightTodos") ||
-        e.affectsConfiguration("domino-lss-lotusscript.checkStructuralBlocks")
+        e.affectsConfiguration("domino-lss-lotusscript.checkStructuralBlocks") ||
+        e.affectsConfiguration("domino-lss-lotusscript.warnFallThroughErrorHandler") ||
+        e.affectsConfiguration("domino-lss-lotusscript.warnSetNewWithoutDim") ||
+        e.affectsConfiguration("domino-lss-lotusscript.warnDeprecatedCalls") ||
+        e.affectsConfiguration("domino-lss-lotusscript.warnMagicMsgboxConstants") ||
+        e.affectsConfiguration("domino-lss-lotusscript.warnNotesClassTypo")
       ) {
         for (const doc of vscode.workspace.textDocuments) {
           run(doc);

@@ -89,6 +89,11 @@
       "beforeText": "^\\s*%REM\\b\\s*$",
       "afterText": "^\\s*%END\\s+REM\\b\\s*$",
       "action": { "indent": "indentOutdent" }
+    },
+    {
+      "beforeText": "^\\s*%REM\\b\\s*$",
+      "afterText": "^(?!\\s*%END\\s+REM\\b)",
+      "action": { "indent": "indent", "appendText": "\n%END REM" }
     }
   ]
 }

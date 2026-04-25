@@ -284,5 +284,166 @@
     "prefix": ["region", "#region"],
     "body": ["'#region ${1:title}", "$0", "'#endregion"],
     "description": "Foldable comment region"
+  },
+
+  "Agent skeleton (Initialize + handler)": {
+    "prefix": ["agent", "agentskel"],
+    "body": [
+      "Option Public",
+      "Option Declare",
+      "%Include \"lsconst.lss\"",
+      "",
+      "Sub Initialize",
+      "\tOn Error Goto errh",
+      "\tDim s As New NotesSession",
+      "\tDim db As NotesDatabase",
+      "\tSet db = s.CurrentDatabase",
+      "\t",
+      "\tDim agent As NotesAgent",
+      "\tSet agent = s.CurrentAgent",
+      "\tDim log As NotesLog",
+      "\tSet log = s.CreateLog(agent.Name)",
+      "\tCall log.OpenAgentLog()",
+      "\t",
+      "\t$0",
+      "\t",
+      "\tCall log.Close()",
+      "\tExit Sub",
+      "errh:",
+      "\tCall log.LogError(Err, \"\" & Error$ & \" at line \" & Erl)",
+      "\tCall log.Close()",
+      "End Sub"
+    ],
+    "description": "Complete Domino agent: Option Declare, lsconst, NotesLog, error handler"
+  },
+
+  "Iterate NotesView entries by ColumnValues": {
+    "prefix": ["nsviewcols", "viewcols"],
+    "body": [
+      "Dim view As NotesView",
+      "Set view = ${1:db}.GetView(${2:\"View Name\"})",
+      "Dim entry As NotesViewEntry",
+      "Set entry = view.GetFirstEntry()",
+      "Do While Not entry Is Nothing",
+      "\tDim cols As Variant",
+      "\tcols = entry.ColumnValues",
+      "\t' cols(0), cols(1), \u2026 mirror the view's column order",
+      "\t$0",
+      "\tSet entry = view.GetNextEntry(entry)",
+      "Loop"
+    ],
+    "description": "View loop reading entry.ColumnValues"
+  },
+
+  "Iterate AllDocuments and clean up": {
+    "prefix": ["nsalldocs", "alldocs"],
+    "body": [
+      "Dim coll As NotesDocumentCollection",
+      "Set coll = ${1:db}.AllDocuments",
+      "Dim doc As NotesDocument",
+      "Dim nextDoc As NotesDocument",
+      "Set doc = coll.GetFirstDocument()",
+      "Do While Not doc Is Nothing",
+      "\tSet nextDoc = coll.GetNextDocument(doc)",
+      "\t$0",
+      "\tCall doc.Save(True, False)",
+      "\tSet doc = nextDoc",
+      "Loop"
+    ],
+    "description": "Iterate db.AllDocuments with the safe cycle pattern"
+  },
+
+  "Sequential file Open / Line Input / Close": {
+    "prefix": ["openfile", "filein"],
+    "body": [
+      "Dim fnum As Integer",
+      "fnum = FreeFile",
+      "Open ${1:\"c:\\\\temp\\\\input.txt\"} For Input As #fnum",
+      "Dim line As String",
+      "Do While Not Eof(fnum)",
+      "\tLine Input #fnum, line",
+      "\t$0",
+      "Loop",
+      "Close #fnum"
+    ],
+    "description": "Read a sequential file line by line"
+  },
+
+  "Sequential file Open / Print / Close (Output)": {
+    "prefix": ["openfileout", "fileout"],
+    "body": [
+      "Dim fnum As Integer",
+      "fnum = FreeFile",
+      "Open ${1:\"c:\\\\temp\\\\output.txt\"} For Output As #fnum",
+      "Print #fnum, ${2:\"hello\"}",
+      "$0",
+      "Close #fnum"
+    ],
+    "description": "Write a sequential file via Print #"
+  },
+
+  "Inputbox with validation loop": {
+    "prefix": ["inputbox", "asknumber"],
+    "body": [
+      "Dim raw As String",
+      "Do",
+      "\traw = Inputbox$(${1:\"Enter a value\"}, ${2:\"Title\"})",
+      "\tIf raw = \"\" Then Exit Sub",
+      "\tIf IsNumeric(raw) Then Exit Do",
+      "\tMessagebox \"Please enter a number.\", 16, \"Invalid input\"",
+      "Loop",
+      "Dim ${3:n} As ${4|Long,Double,Currency,Variant|}",
+      "${3:n} = ${5:CLng}(raw)",
+      "$0"
+    ],
+    "description": "Inputbox with validation loop"
+  },
+
+  "Implements skeleton (LotusScript class)": {
+    "prefix": ["impl", "implements"],
+    "body": [
+      "Class ${1:MyClass} As ${2:BaseClass}",
+      "\tImplements ${2:BaseClass}",
+      "\t",
+      "\tSub New()",
+      "\t\t$0",
+      "\tEnd Sub",
+      "\t",
+      "\tSub ${3:DoWork}()",
+      "\t\t' implementation",
+      "\tEnd Sub",
+      "End Class"
+    ],
+    "description": "Class … As BaseClass / Implements …"
+  },
+
+  "Type / End Type (UDT)": {
+    "prefix": ["udt", "typedef"],
+    "body": [
+      "Type ${1:RecordName}",
+      "\t${2:fieldA} As ${3:String}",
+      "\t${4:fieldB} As ${5:Long}",
+      "End Type"
+    ],
+    "description": "User-defined type"
+  },
+
+  "Enum / End Enum": {
+    "prefix": ["enum"],
+    "body": [
+      "Enum ${1:MyEnum}",
+      "\t${2:First} = 0",
+      "\t${3:Second} = 1",
+      "End Enum"
+    ],
+    "description": "Enum block"
+  },
+
+  "Lsi_info / GetThreadInfo (current proc)": {
+    "prefix": ["lsicurrent", "getthread"],
+    "body": [
+      "Print \"In \" & GetThreadInfo(LSI_THREAD_PROC) & \" line \" & GetThreadInfo(LSI_THREAD_LINE)"
+    ],
+    "description": "Trace the current Sub/Function and line"
   }
 }

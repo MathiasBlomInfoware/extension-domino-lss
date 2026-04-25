@@ -13,9 +13,15 @@ Syntax highlighting and language basics for **LotusScript** and HCL Domino **`.l
 - **Signature help** with parameter docs while you type `obj.Method(` for ~120 of the most-used Notes APIs (`NotesSession`, `NotesDatabase`, `NotesDocument`, `NotesDocumentCollection`, `NotesView`, `NotesItem`, `NotesDateTime`, `NotesStream`, `NotesACL`, `NotesDXLExporter/Importer`, `NotesUIWorkspace`, `NotesUIDocument`, `NotesLog`, `NotesRichTextItem`).
 - **Outline / Document Symbols** for `Class` / `Sub` / `Function` / `Property` / top-level `Dim` and `Const` (powers Outline view, sticky scroll, breadcrumbs, “Go to Symbol in File…”).
 - **Workspace Symbols** (`Ctrl+T`) and **Go to Definition** (`F12`) across all `.lss` files in the workspace.
+- **Find References** (`Shift+F12`), **Rename Symbol** (`F2`), **Document Highlight**, **Go to Type Definition**, and **Go to Implementation** for LotusScript identifiers.
 - **Folding ranges** for `%REM … %END REM` blocks (comment-kind), `Sub`/`Function`/`Property`/`Class`, and `'#region … '#endregion` markers.
 - **Format Document** (`Shift+Alt+F`) re-indents structural blocks (Sub/Function/Property/Class/If/Else/ElseIf/For/ForAll/Do/While/With/Select/Case) using your editor’s tab settings, and trims trailing whitespace. `%REM` blocks are left untouched.
 - **CodeLens** *“Open <NotesClass> in HCL help”* above each `Dim … As Notes*` declaration and `Set … = New Notes*` (toggle with `enableCodeLens`).
+- **Reference CodeLens** *“N references”* above `Sub`/`Function`/`Property`/`Class` declarations (toggle with `enableReferenceCodeLens`).
+- **Inlay Hints** for Notes member call parameters (toggle with `enableInlayHints`).
+- **Semantic tokens** that distinguish user symbols, Notes classes/types, parameters, and deprecated calls (toggle with `enableSemanticTokens`).
+- **Document links** for `%Include "..."` targets and inline `http(s)` URLs.
+- **Status bar** context for current symbol + per-file LotusScript diagnostic counts.
 - **Notes constants** (~100 across ACL levels, ACL types, DB types, embedded objects, FT search options, picklist/prompt types, item types, DXL options, stream EOL kinds, …) suggested in completion and explained on hover.
 - **Diagnostics** (each toggleable):
   - `requireAsciiComments` — non-ASCII characters in comments (live, ~200 ms debounce).
@@ -40,10 +46,24 @@ All under **`domino-lss-lotusscript.*`**:
 | `warnMissingOptionDeclare` | `true` | Hint when a `.lss` file is missing `Option Declare`. |
 | `checkStructuralBlocks` | `true` | Warn about unclosed / mismatched block constructs. |
 | `enableCodeLens` | `true` | Show *“Open <NotesClass> in HCL help”* above declarations. |
+| `enableReferenceCodeLens` | `true` | Show *“N references”* above declarations. |
+| `enableInlayHints` | `true` | Show parameter-name inlay hints for Notes member calls. |
+| `enableSemanticTokens` | `true` | Enable semantic token classification for richer theming. |
+| `enableStatusBar` | `true` | Show current symbol and file diagnostics in status bar. |
+| `warnFallThroughErrorHandler` | `true` | Warn on implicit fall-through into `ErrorHandler:` labels. |
+| `warnSetNewWithoutDim` | `true` | Warn when `Set x = New ...` has no typed prior `Dim x As ...`. |
+| `warnDeprecatedCalls` | `true` | Warn on deprecated calls like `Lsi_info`. |
+| `warnMagicMsgboxConstants` | `true` | Warn on numeric Msgbox flags and suggest `MB_*` constants. |
+| `warnNotesClassTypo` | `true` | Suggest nearest Notes class when type name seems misspelled. |
 
 ## Commands
 
 - **`Open HCL Domino Designer help in browser`** (`domino-lss-lotusscript.openDesignerHelp`) — internal command used by hover/completion links. Restricted to `https://help.hcl-software.com/` URLs.
+- **`Insert agent skeleton (Initialize + NotesLog + error handler)`** (`domino-lss-lotusscript.insertAgentSkeleton`)
+- **`Insert NotesSession + CurrentDatabase boilerplate`** (`domino-lss-lotusscript.insertSessionAndDb`)
+- **`Toggle 'Option Declare' at top of file`** (`domino-lss-lotusscript.toggleOptionDeclare`)
+- **`Open lsconst.lss constants reference (HCL help)`** (`domino-lss-lotusscript.openLsconstReference`)
+- **`Jump to first executable line`** (`domino-lss-lotusscript.insertAtFirstCode`)
 
 ## Snippet shortcuts
 
@@ -83,7 +103,15 @@ symbols.js                   DocumentSymbol + WorkspaceSymbol + Definition provi
 folding.js                   FoldingRangeProvider for %REM / Sub / Function / Property / Class
 formatter.js                 Format Document (structural re-indent + trim trailing)
 codelens.js                  CodeLens 'Open <NotesClass> in HCL help'
+references.js                Reference / rename / document-highlight providers
+code-actions.js              Quick fixes + small refactors from diagnostics
+inlay-hints.js               Parameter inlay hints for Notes member calls
+semantic-tokens.js           Semantic token provider for richer theming
+impl-typedef.js              Type definition / implementation providers
+document-links.js            Clickable %Include and URL links in .lss files
+commands.js                  Palette commands for common LotusScript templates/actions
 diagnostics.js               ASCII / TODO / Option Declare / structural-block scanners
+status-bar.js                Current symbol and per-file diagnostic status items
 document-selectors.js        DocumentSelector / isLssDocument helper
 data/notes-members.json      Curated Notes class members (name / kind / summary)
 data/notes-signatures.json   Hand-curated signatures + parameter docs (overlay)
@@ -95,6 +123,8 @@ language-configuration.json
 ```
 
 ## Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md) for the latest release notes.
 
 ### 0.3.1
 - Hover for `GetThreadInfo` / `Lsi_info` (with the standard `LSI_THREAD_*` argument list spelled out), `Err`, `Erl`, `Error`, `Resume`, `Environ`, `Shell`, `Sleep`, `Beep`, `Choose`, `IIf`, `Switch`, `Eof`, `Lof`, `FileLen`, `Dir`, `FreeFile`, `Round`, `DateAdd`/`DateDiff`/`DatePart`/`DateNumber`/`DateSerial`/`TimeNumber`/`TimeSerial`, `StrComp`, `StrToken`, `Space`, `String`.

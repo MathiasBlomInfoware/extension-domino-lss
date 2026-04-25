@@ -2,6 +2,8 @@
 const vscode = require("vscode");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
 const { notesClassTopicUrl, effectiveHelpVersion } = require("./hcl-docs.js");
+const { scanSymbols } = require("./symbols.js");
+const { findReferencesInWorkspace, flattenSymbolList } = require("./references.js");
 /** @type {Record<string, Array<{ name: string }>>} */
 const NOTES_MEMBERS = require("./data/notes-members.json");
 
@@ -22,11 +24,32 @@ const provider = {
       return [];
     }
     const version = effectiveHelpVersion(conf.get("helpVersion"));
+    const showRefCounts = conf.get("enableReferenceCodeLens", true);
     /** @type {vscode.CodeLens[]} */
     const lenses = [];
     /** @type {Set<string>} */
     const seen = new Set();
     let inRem = false;
+
+    if (showRefCounts) {
+      const flat = flattenSymbolList(scanSymbols(document));
+      for (const s of flat) {
+        if (
+          s.kind === vscode.SymbolKind.Method ||
+          s.kind === vscode.SymbolKind.Function ||
+          s.kind === vscode.SymbolKind.Property ||
+          s.kind === vscode.SymbolKind.Class
+        ) {
+          const lens = new vscode.CodeLens(s.selectionRange);
+          /** @type {any} */ (lens).__refsCtx = {
+            kind: s.kind,
+            name: s.name,
+            uri: document.uri,
+          };
+          lenses.push(lens);
+        }
+      }
+    }
 
     for (let i = 0; i < document.lineCount; i++) {
       const line = document.lineAt(i).text;
@@ -86,6 +109,43 @@ const provider = {
     }
     return lenses;
   },
+  /**
+   * Lazy "N references" lenses on top of declarations. The HCL-link lenses
+   * above are returned synchronously by `provideCodeLenses`; references
+   * counts are filled in by `resolveCodeLens` so the workspace scan only
+   * runs for lenses VS Code actually requests resolution for.
+   *
+   * @param {vscode.CodeLens} lens
+   */
+  async resolveCodeLens(lens) {
+    /** @type {{ kind?: string; name?: string; uri?: vscode.Uri }} */
+    const ctx = /** @type {any} */ (lens).__refsCtx;
+    if (!ctx || !ctx.name || !ctx.uri) {
+      return lens;
+    }
+    try {
+      const refs = await findReferencesInWorkspace(ctx.name);
+      const others = refs.filter(
+        (r) =>
+          !(
+            r.uri.toString() === ctx.uri.toString() &&
+            r.range.start.line === lens.range.start.line
+          )
+      );
+      const count = others.length;
+      lens.command = {
+        title: count === 1 ? `$(references) 1 reference` : `$(references) ${count} references`,
+        command: "editor.action.showReferences",
+        arguments: [ctx.uri, lens.range.start, others],
+      };
+    } catch (e) {
+      lens.command = {
+        title: "$(references) — references",
+        command: "",
+      };
+    }
+    return lens;
+  },
 };
 
 /** @param {vscode.ExtensionContext} context */
@@ -97,6 +157,7 @@ function registerLotusScriptCodeLens(context) {
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (
         e.affectsConfiguration("domino-lss-lotusscript.enableCodeLens") ||
+        e.affectsConfiguration("domino-lss-lotusscript.enableReferenceCodeLens") ||
         e.affectsConfiguration("domino-lss-lotusscript.helpVersion")
       ) {
         emitter.fire();

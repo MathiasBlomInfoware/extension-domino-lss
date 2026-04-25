@@ -2,7 +2,7 @@
   "name": "domino-lss-lotusscript",
   "displayName": "LotusScript & .lss",
   "description": "Syntax highlighting and language basics for LotusScript and HCL Domino .lss library source files.",
-  "version": "0.3.1",
+  "version": "0.5.0",
   "publisher": "infoware",
   "license": "MIT",
   "homepage": "https://github.com/MathiasBlomInfoware/extension-domino-lss#readme",
@@ -21,6 +21,11 @@
     "Snippets",
     "Linters"
   ],
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#2B579A",
+    "theme": "dark"
+  },
   "keywords": [
     "lotusscript",
     "domino",
@@ -36,9 +41,63 @@
     "commands": [
       {
         "command": "domino-lss-lotusscript.openDesignerHelp",
-        "title": "Open HCL Domino Designer help in browser"
+        "title": "Open HCL Domino Designer help in browser",
+        "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.insertAgentSkeleton",
+        "title": "Insert agent skeleton (Initialize + NotesLog + error handler)",
+        "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.insertSessionAndDb",
+        "title": "Insert NotesSession + CurrentDatabase boilerplate",
+        "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.toggleOptionDeclare",
+        "title": "Toggle 'Option Declare' at top of file",
+        "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.openLsconstReference",
+        "title": "Open lsconst.lss constants reference (HCL help)",
+        "category": "LotusScript"
+      },
+      {
+        "command": "domino-lss-lotusscript.insertAtFirstCode",
+        "title": "Jump to first executable line",
+        "category": "LotusScript"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "domino-lss-lotusscript.openDesignerHelp",
+          "when": "false"
+        },
+        {
+          "command": "domino-lss-lotusscript.insertAgentSkeleton",
+          "when": "editorLangId == lotusscript"
+        },
+        {
+          "command": "domino-lss-lotusscript.insertSessionAndDb",
+          "when": "editorLangId == lotusscript"
+        },
+        {
+          "command": "domino-lss-lotusscript.toggleOptionDeclare",
+          "when": "editorLangId == lotusscript"
+        },
+        {
+          "command": "domino-lss-lotusscript.insertAtFirstCode",
+          "when": "editorLangId == lotusscript"
+        },
+        {
+          "command": "domino-lss-lotusscript.openLsconstReference",
+          "when": "editorLangId == lotusscript"
+        }
+      ]
+    },
     "configuration": {
       "title": "LotusScript (.lss)",
       "properties": {
@@ -86,6 +145,51 @@
           "type": "boolean",
           "default": true,
           "description": "Show 'Open <NotesClass> in HCL help' code lenses above declarations."
+        },
+        "domino-lss-lotusscript.enableReferenceCodeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show 'N references' code lenses above Sub/Function/Property/Class declarations (resolved lazily)."
+        },
+        "domino-lss-lotusscript.enableInlayHints": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show parameter-name inlay hints at Notes* method call sites."
+        },
+        "domino-lss-lotusscript.enableStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the current Class.Method/Sub/Function in the status bar."
+        },
+        "domino-lss-lotusscript.enableSemanticTokens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable semantic token classification so user-defined symbols, Notes classes, parameters and deprecated calls can be themed separately."
+        },
+        "domino-lss-lotusscript.warnFallThroughErrorHandler": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when execution can fall through into an ErrorHandler: label without an explicit Exit Sub/Function/Property."
+        },
+        "domino-lss-lotusscript.warnSetNewWithoutDim": {
+          "type": "boolean",
+          "default": true,
+          "description": "Warn when 'Set x = New ClassName' uses a variable that was not previously declared with 'Dim x As ClassName'."
+        },
+        "domino-lss-lotusscript.warnDeprecatedCalls": {
+          "type": "boolean",
+          "default": true,
+          "description": "Flag deprecated LotusScript calls (e.g. Lsi_info → GetThreadInfo) and offer a quick fix to the canonical replacement."
+        },
+        "domino-lss-lotusscript.warnMagicMsgboxConstants": {
+          "type": "boolean",
+          "default": true,
+          "description": "Hint when Msgbox is called with numeric literals for buttons/icons; suggest using MB_* named constants from lsconst.lss."
+        },
+        "domino-lss-lotusscript.warnNotesClassTypo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Suggest the closest Notes* class name (Levenshtein) when 'As [New] Notes…' references an unknown class."
         }
       }
     },
@@ -121,6 +225,45 @@
       {
         "language": "lotusscript",
         "path": "./snippets/lotusscript.json"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "domino-lss-getting-started",
+        "title": "Get started with LotusScript & .lss",
+        "description": "Tour the highlight, hover, completion, diagnostics and refactoring features for HCL Domino LotusScript.",
+        "steps": [
+          {
+            "id": "open-sample",
+            "title": "Open a .lss file",
+            "description": "Open any `.lss` file (or use the bundled sample) to activate the extension. The status bar will show the current Class.Method.\n[Open sample](command:vscode.open?%5B%22examples%2Fdemo.lss%22%5D)",
+            "media": { "markdown": "walkthroughs/01-open-sample.md" }
+          },
+          {
+            "id": "hover-help",
+            "title": "Hover for HCL help",
+            "description": "Hover over any built-in (`Msgbox`, `Boolean`), Notes class (`NotesDatabase`), constant (`ATTR_DIRECTORY`), or directive (`%Include`) to see HCL Domino Designer documentation links.",
+            "media": { "markdown": "walkthroughs/02-hover.md" }
+          },
+          {
+            "id": "diagnostics",
+            "title": "Lint & quick fixes",
+            "description": "Open the Problems panel — the extension warns about missing `Option Declare`, fall-through `ErrorHandler:`, deprecated calls, magic Msgbox constants and likely Notes* class typos. Many warnings come with a Quick Fix (Ctrl+. / Cmd+.).",
+            "media": { "markdown": "walkthroughs/03-diagnostics.md" }
+          },
+          {
+            "id": "refactor",
+            "title": "Find references, rename, generate %REM",
+            "description": "Right-click any identifier for `Find All References`, `Rename Symbol`, or open Quick Fix on a `Sub`/`Function`/`Property` declaration to insert an error-handler skeleton or generate a `%REM` documentation block.",
+            "media": { "markdown": "walkthroughs/04-refactor.md" }
+          },
+          {
+            "id": "configure",
+            "title": "Tune to your team's style",
+            "description": "Search settings for `domino-lss-lotusscript` to enable/disable each diagnostic, change the HCL help version, or hide CodeLenses and inlay hints.\n[Open settings](command:workbench.action.openSettings?%22domino-lss-lotusscript%22)",
+            "media": { "markdown": "walkthroughs/05-configure.md" }
+          }
+        ]
       }
     ],
     "keybindings": [

@@ -171,5 +171,14 @@
     "IDIGNORE": { "value": 5 },
     "IDYES": { "value": 6 },
     "IDNO": { "value": 7 }
+  },
+  "File attributes (Dir, GetFileAttr, SetFileAttr)": {
+    "ATTR_NORMAL": { "value": 0, "summary": "Plain file with no special attributes." },
+    "ATTR_READ_ONLY": { "value": 1, "summary": "Read-only file. Combine with Or; test with And." },
+    "ATTR_HIDDEN": { "value": 2, "summary": "Hidden file." },
+    "ATTR_SYSTEM": { "value": 4, "summary": "System file." },
+    "ATTR_VOLUME": { "value": 8, "summary": "Volume label (Windows)." },
+    "ATTR_DIRECTORY": { "value": 16, "summary": "Directory entry. Use to make Dir$(path, ATTR_DIRECTORY) include directories, or test for one with GetFileAttr(path) And ATTR_DIRECTORY." },
+    "ATTR_ARCHIVE": { "value": 32, "summary": "Archive bit (changed since last backup)." }
   }
 }

@@ -1,6 +1,10 @@
 // @ts-check
 const vscode = require("vscode");
-const { hoverMarkdownForWord, effectiveHelpVersion } = require("./hcl-docs.js");
+const {
+  hoverMarkdownForWord,
+  directiveHoverMarkdown,
+  effectiveHelpVersion,
+} = require("./hcl-docs.js");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
 const { tryNotesMemberHover } = require("./notes-member-completion.js");
 const { constantHoverMarkdown } = require("./notes-constants.js");
@@ -75,6 +79,36 @@ function parseNotesDotMember(line, rawCol) {
     return undefined;
   }
   return { obj, member, memberStart: ws, memberEnd: we };
+}
+
+/**
+ * If the cursor sits inside a `%`-prefixed compile-time directive at the
+ * **start of a line** (e.g. `%REM`, `%END REM`, `%Include "…"`, `%If FOO`,
+ * `%ElseIf`, `%Else`, `%End If`, `%Pragma`), return the directive token and
+ * its range. Whitespace inside the keyword is allowed so `%END REM` and
+ * `%End If` resolve as one token.
+ *
+ * Returns `undefined` when the line does not start with `%` (after optional
+ * indentation) or the cursor is past the end of the directive token.
+ *
+ * @param {string} line
+ * @param {number} rawCol 0-based UTF-16 column from {@link vscode.Position}
+ * @returns {{ token: string; start: number; end: number } | undefined}
+ */
+function scanDirectiveAtColumn(line, rawCol) {
+  if (!line.length) {
+    return undefined;
+  }
+  const m = line.match(/^(\s*)(%\s*[A-Za-z]+(?:\s+[A-Za-z]+)?)/);
+  if (!m) {
+    return undefined;
+  }
+  const start = m[1].length;
+  const end = start + m[2].length;
+  if (rawCol < start || rawCol > end) {
+    return undefined;
+  }
+  return { token: m[2], start, end };
 }
 
 /**
@@ -175,6 +209,35 @@ function registerHclHover(context) {
 
       const lineText = document.lineAt(position.line).text;
 
+      const directive = scanDirectiveAtColumn(lineText, position.character);
+      if (directive) {
+        try {
+          const md = directiveHoverMarkdown(directive.token, version);
+          if (md) {
+            const range = new vscode.Range(
+              position.line,
+              directive.start,
+              position.line,
+              directive.end
+            );
+            return new vscode.Hover(md, range);
+          }
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          const fallback = new vscode.MarkdownString(
+            `**LotusScript hover**\n\n_(Error building help: ${msg})_`
+          );
+          fallback.isTrusted = false;
+          const range = new vscode.Range(
+            position.line,
+            directive.start,
+            position.line,
+            directive.end
+          );
+          return new vscode.Hover(fallback, range);
+        }
+      }
+
       const dot = parseNotesDotMember(lineText, position.character);
       if (dot) {
         try {
@@ -233,7 +296,10 @@ function registerHclHover(context) {
           return new vscode.Hover(constMd, wordRange);
         }
 
-        const md = hoverMarkdownForWord(word, version);
+        const md = hoverMarkdownForWord(word, version, {
+          lineText,
+          wordStartCol,
+        });
         if (!md) {
           return undefined;
         }
