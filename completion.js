@@ -6,12 +6,11 @@ const {
   CHAPTER7,
   CLASSES_AZ,
   DESIGNER_PUBLICATION,
-  basicBase,
   builtinDocFile,
   notesClassDocFile,
   markdownDoc,
   markdownDesignerPublicationDoc,
-  normalizeHelpVersion,
+  effectiveHelpVersion,
 } = require("./hcl-docs.js");
 const { LOTUSSCRIPT_OR_LSS, isLssDocument } = require("./document-selectors.js");
 const { tryNotesMemberCompletion } = require("./notes-member-completion.js");
@@ -24,12 +23,19 @@ function registerHclCompletions(context) {
   let cache = null;
   /** @type {string} */
   let cacheVersion = "";
+  /** @type {string} workspace folder or file path used for {@link vscode.workspace.getConfiguration} scope */
+  let cacheScopeKey = "";
 
-  const rebuild = () => {
-    const version = normalizeHelpVersion(
-      vscode.workspace.getConfiguration("domino-lss-lotusscript").get("helpVersion")
-    );
-    const base = basicBase(version);
+  /**
+   * @param {vscode.Uri | undefined} resource
+   */
+  const rebuild = (resource) => {
+    const conf = vscode.workspace.getConfiguration("domino-lss-lotusscript", resource);
+    const version = effectiveHelpVersion(conf.get("helpVersion"));
+    const scopeKey = resource
+      ? vscode.workspace.getWorkspaceFolder(resource)?.uri.fsPath ?? resource.fsPath
+      : "__default__";
+    cacheScopeKey = scopeKey;
     /** @type {vscode.CompletionItem[]} */
     const items = [];
 
@@ -104,23 +110,19 @@ function registerHclCompletions(context) {
       if (!isLssDocument(document)) {
         return undefined;
       }
-      const enabled = vscode.workspace
-        .getConfiguration("domino-lss-lotusscript")
-        .get("enableHclDocCompletions", true);
+      const conf = vscode.workspace.getConfiguration("domino-lss-lotusscript", document.uri);
+      const enabled = conf.get("enableHclDocCompletions", true);
       if (!enabled) {
         return undefined;
       }
 
-      const version = normalizeHelpVersion(
-        vscode.workspace.getConfiguration("domino-lss-lotusscript").get("helpVersion")
-      );
-      if (!cache || cacheVersion !== version) {
-        rebuild();
+      const version = effectiveHelpVersion(conf.get("helpVersion"));
+      const scopeKey = vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ?? document.uri.fsPath;
+      if (!cache || cacheVersion !== version || cacheScopeKey !== scopeKey) {
+        rebuild(document.uri);
       }
 
-      const membersOnly = vscode.workspace
-        .getConfiguration("domino-lss-lotusscript")
-        .get("membersOnlyAfterDot", true);
+      const membersOnly = conf.get("membersOnlyAfterDot", true);
 
       const memberItems = tryNotesMemberCompletion(document, position, version, membersOnly);
       if (memberItems !== undefined) {

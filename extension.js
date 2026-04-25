@@ -1,6 +1,6 @@
 // @ts-check
 const vscode = require("vscode");
-const { normalizeHelpVersion, rewriteDesigner1450To151 } = require("./hcl-docs.js");
+const { effectiveHelpVersion } = require("./hcl-docs.js");
 const { registerHclCompletions } = require("./completion.js");
 const { registerHclHover } = require("./hover.js");
 const { isLssDocument } = require("./document-selectors.js");
@@ -102,11 +102,11 @@ function scanDocument(doc, collection) {
 }
 
 /**
- * One-time: normalize stored `helpVersion` (14.5.0 → 14.5.1, pasted URLs → version only, invisible chars).
+ * One-time: persist cleaned `helpVersion` (pasted URLs → segment; below-minimum semver → floor).
  * @param {vscode.ExtensionContext} context
  */
 async function migrateHelpVersionCanonical(context) {
-  const key = "dominoLssMigratedHelpVersionCanonical2026";
+  const key = "dominoLssMigratedHelpVersionCanonical2026b";
   if (context.globalState.get(key)) {
     return;
   }
@@ -125,7 +125,7 @@ async function migrateHelpVersionCanonical(context) {
       if (!raw) {
         return;
       }
-      const next = normalizeHelpVersion(val);
+      const next = effectiveHelpVersion(val);
       if (next !== raw) {
         await conf.update("helpVersion", next, target);
       }
@@ -150,7 +150,7 @@ exports.activate = function (context) {
         if (!url.startsWith("https://help.hcl-software.com/")) {
           return;
         }
-        await vscode.env.openExternal(vscode.Uri.parse(rewriteDesigner1450To151(url)));
+        await vscode.env.openExternal(vscode.Uri.parse(url));
       }
     )
   );

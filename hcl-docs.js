@@ -360,7 +360,7 @@ const OPEN_DESIGNER_HELP_CMD = "domino-lss-lotusscript.openDesignerHelp";
  * @param {string} url
  */
 function designerHelpMarkdownLink(text, url) {
-  const u = rewriteDesigner1450To151(String(url));
+  const u = String(url);
   const safe = text.replace(/[\[\]()]/g, " ").replace(/\s+/g, " ").trim();
   if (!u.startsWith(DESIGNER_HELP_PREFIX)) {
     return `[${safe}](${u})`;
@@ -370,8 +370,7 @@ function designerHelpMarkdownLink(text, url) {
 }
 
 /**
- * Effective help tree version for HCL URLs and hovers. Older installs may still
- * have `14.5.0` stored from the previous extension default.
+ * Version segment for `…/dom_designer/{version}/…` URLs (e.g. from `helpVersion` or a pasted help URL).
  * @param {unknown} raw from `getConfiguration(...).get("helpVersion")` or any caller
  * @returns {string}
  */
@@ -382,8 +381,16 @@ function normalizeHelpVersion(raw) {
     .trim();
   s = s.replace(/[\u00a0\u2007\u202f]/g, " ").trim();
   s = s.replace(/\s+/g, " ").trim();
-  // Strip bidi / format chars that break exact match on "14.5.0".
+  // Strip bidi / format chars that break version parsing.
   s = s.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, "").trim();
+  try {
+    s = s.normalize("NFKC");
+  } catch {
+    /* ignore */
+  }
+  // Fullwidth digits / punctuation (common when pasting from PDF or web) → ASCII
+  s = s.replace(/[\uff10-\uff19]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xff10 + 0x30));
+  s = s.replace(/\uff0e/g, ".").replace(/\uff0c/g, ",");
   // Setting sometimes contains a full help URL; only the X.Y.Z segment is valid here.
   const domMatch = s.match(/\/dom_designer\/(\d+(?:\.\d+)+)\b/i);
   if (domMatch) {
@@ -392,12 +399,58 @@ function normalizeHelpVersion(raw) {
   if (!s) {
     return "14.5.1";
   }
-  const core = s.replace(/,/g, ".").toLowerCase();
-  // Map any 14.5.0* patch tree to the live 14.5.1 help (HCL no longer serves 14.5.0 reliably).
-  if (!core || core === "14.5.0" || /^14\.5\.0(\.|$)/.test(core)) {
-    return "14.5.1";
-  }
   return s;
+}
+
+/** Lowest `dom_designer/{version}/` tree this extension targets; align with `package.json` default `helpVersion`. */
+const FLOOR_HELP_VERSION = "14.5.1";
+
+/**
+ * @param {string} t
+ * @returns {[number, number, number] | null}
+ */
+function semverTriplet(t) {
+  const m = String(t)
+    .trim()
+    .match(/^(\d+)\.(\d+)(?:\.(\d+))?\b/);
+  if (!m) {
+    return null;
+  }
+  return [Number(m[1]), Number(m[2]), Number(m[3] ?? 0)];
+}
+
+/**
+ * @param {string} a
+ * @param {string} b
+ * @returns {number} -1 | 0 | 1
+ */
+function semverCompare(a, b) {
+  const A = semverTriplet(a);
+  const B = semverTriplet(b);
+  if (!A || !B) {
+    return 0;
+  }
+  for (let i = 0; i < 3; i++) {
+    if (A[i] < B[i]) {
+      return -1;
+    }
+    if (A[i] > B[i]) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+/**
+ * Version used in HCL URLs: same as {@link normalizeHelpVersion}, but never below {@link FLOOR_HELP_VERSION}.
+ * @param {unknown} raw
+ */
+function effectiveHelpVersion(raw) {
+  const v = normalizeHelpVersion(raw);
+  if (!semverTriplet(v)) {
+    return FLOOR_HELP_VERSION;
+  }
+  return semverCompare(v, FLOOR_HELP_VERSION) < 0 ? FLOOR_HELP_VERSION : v;
 }
 
 /**
@@ -408,12 +461,11 @@ function normalizeHelpVersion(raw) {
  * @param {string} [topicUrlOverride] full URL for Notes class topics (includes ?hl=)
  */
 function hoverMarkdown(version, file, linkTitle, body, topicUrlOverride) {
-  const v = normalizeHelpVersion(version);
-  let url =
+  const v = effectiveHelpVersion(version);
+  const url =
     typeof topicUrlOverride === "string" && topicUrlOverride.length > 0
       ? topicUrlOverride
       : basicBase(v) + file;
-  url = rewriteDesigner1450To151(url);
   const parts = [];
   if (body && body.trim()) {
     parts.push(body.trim());
@@ -483,21 +535,11 @@ const KEYWORD_DOC = new Set(
 );
 
 /**
- * HCL sometimes still resolves to 14.5.0 in links; force the live 14.5.1 help tree segment.
- * @param {string} url
- */
-function rewriteDesigner1450To151(url) {
-  return String(url)
-    .replace(/\/dom_designer\/14\.5\.0\//gi, "/dom_designer/14.5.1/")
-    .replace(/\/dom_designer\/14\.5\.0(?=[?#]|$)/gi, "/dom_designer/14.5.1");
-}
-
-/**
  * @param {unknown} version
  */
 function basicBase(version) {
-  const v = normalizeHelpVersion(version);
-  return rewriteDesigner1450To151(`https://help.hcl-software.com/dom_designer/${v}/basic/`);
+  const v = effectiveHelpVersion(version);
+  return `https://help.hcl-software.com/dom_designer/${v}/basic/`;
 }
 
 /**
@@ -538,9 +580,9 @@ function notesClassTopicUrl(version, className) {
  * @param {string} pathUnderVersion no leading slash
  */
 function designerPublicationUrl(version, pathUnderVersion) {
-  const v = normalizeHelpVersion(version);
+  const v = effectiveHelpVersion(version);
   const tail = String(pathUnderVersion).replace(/^\/+/, "");
-  return rewriteDesigner1450To151(`https://help.hcl-software.com/dom_designer/${v}/${tail}`);
+  return `https://help.hcl-software.com/dom_designer/${v}/${tail}`;
 }
 
 /**
@@ -565,9 +607,7 @@ function markdownDesignerPublicationDoc(version, pathUnderVersion, title) {
  * @param {string} [notesClassName] when set, use Notes class URL with ?hl=
  */
 function markdownDoc(version, file, title, notesClassName) {
-  const url = rewriteDesigner1450To151(
-    notesClassName ? notesClassTopicUrl(version, notesClassName) : basicBase(version) + file
-  );
+  const url = notesClassName ? notesClassTopicUrl(version, notesClassName) : basicBase(version) + file;
   const md = new vscode.MarkdownString(
     `**HCL Domino Designer help**\n\n${designerHelpMarkdownLink(title, url)}\n\n*(Opens in your browser.)*`
   );
@@ -581,7 +621,7 @@ function markdownDoc(version, file, title, notesClassName) {
  * @returns {vscode.MarkdownString | undefined}
  */
 function hoverMarkdownForWord(word, version) {
-  const v = normalizeHelpVersion(version);
+  const v = effectiveHelpVersion(version);
   const raw = word.replace(/\$/g, "").trim();
   if (!raw) {
     return undefined;
@@ -661,5 +701,5 @@ module.exports = {
   markdownDoc,
   hoverMarkdownForWord,
   normalizeHelpVersion,
-  rewriteDesigner1450To151,
+  effectiveHelpVersion,
 };
