@@ -1,13 +1,13 @@
 %REM
 	Agent iwsSynchronizeData
-	Created Nov 6, 2024 by Mathias Blom/Infoware
+	Created Nov 6, 2024 by Mathias Blom / Infoware Solutions Svenska AB
 	Description: Comments for Agent
 %END REM
 Option Public
 Option Declare
 %REM
 	Class iwsSynchronizeData
-	Created Nov 6, 2024 by Mathias Blom/Infoware
+	Created Nov 6, 2024 by Mathias Blom / Infoware Solutions Svenska AB
 	Description: Version 24.11
 	
 	© 1995-2024 Infoware Solutions Svenska AB. All rights reserved.

@@ -2,7 +2,7 @@
 
 Syntax highlighting and language basics for **LotusScript** and HCL Domino **`.lss`** library source files, with one-click links into the official **HCL Domino Designer** online help (default: tree `14.5.1`).
 
-> Publisher: `infoware` · Extension id: `infoware.domino-lss-lotusscript`
+> Publisher: `infoware` (Infoware Solutions Svenska AB) · Extension id: `infoware.domino-lss-lotusscript`
 
 ## Features
 
@@ -266,4 +266,4 @@ See [`CHANGELOG.md`](CHANGELOG.md) for the latest release notes.
 
 ## License
 
-MIT © Infoware AB / Mathias Blom
+MIT © Infoware Solutions Svenska AB / Mathias Blom
