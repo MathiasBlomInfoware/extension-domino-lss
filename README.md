@@ -139,6 +139,30 @@ The bundled snippets are also bound to keys (only when `editorLangId == lotusscr
 
 Or type the prefix and press `Tab`: **`subrem`**, **`funrem`**, **`pctrem`** (see `snippets/lotusscript.json`).
 
+## Install from GitHub Release
+
+Published `.vsix` files live on **GitHub Releases**, not in this repository (keeps git history light). Pick the latest matching tag (for example `v1.1.1`) and download **`domino-lss-lotusscript-<version>.vsix`** from the release assets.
+
+**Releases:** [github.com/MathiasBlomInfoware/extension-domino-lss/releases](https://github.com/MathiasBlomInfoware/extension-domino-lss/releases)
+
+After downloading the VSIX to your machine:
+
+```powershell
+# Visual Studio Code
+code --install-extension .\domino-lss-lotusscript-<version>.vsix --force
+
+# Cursor (CLI named cursor if on PATH)
+cursor --install-extension .\domino-lss-lotusscript-<version>.vsix --force
+```
+
+You can also use **Extensions → … → Install from VSIX…** and select the downloaded file.
+
+Optional — fetch the asset with [GitHub CLI](https://cli.github.com/) (adjust the tag if needed):
+
+```powershell
+gh release download v1.1.1 --repo MathiasBlomInfoware/extension-domino-lss --pattern "*.vsix"
+```
+
 ## Development
 
 ```powershell
@@ -147,6 +171,9 @@ npx --yes @vscode/vsce package --skip-license --no-dependencies --allow-missing-
 
 # Install locally into Cursor
 cursor --install-extension .\domino-lss-lotusscript-<version>.vsix --force
+
+# Visual Studio Code
+code --install-extension .\domino-lss-lotusscript-<version>.vsix --force
 
 # Or run the Extension Host from this folder
 # .vscode/launch.json points --extensionDevelopmentPath at the workspace
